@@ -1,12 +1,14 @@
 # Заставил работать на основе этого
 # https://fenicsproject.org/olddocs/dolfin/1.6.0/cpp/demo/documented/navier-stokes/cpp/documentation.html
+# https://fenicsproject.org/pub/tutorial/html/._ftut1010.html#ftut1:reactionsystem
 
 # Для генерации .hpp
-# ffc -l dolfin magnetic.ufl
+# ffc -l dolfin velocity.ufl
 
-from ufl_legacy import (dx, inner, cross, tetrahedron,
+from ufl_legacy import (dx, dot, cross, div, lhs, rhs,
                  Coefficient, VectorElement, FiniteElement,
-                 TestFunction, TrialFunction, lhs, rhs)
+                 tetrahedron, triangle,
+                 TestFunctions, TrialFunctions)
 
 # Наверное стоит все решать в СИ как умные дядьки, но пока делаю в СГС
 # Коэффициент q/mc в ускорении, разный для разных частиц
@@ -17,21 +19,27 @@ mp = 1.67262192369e-24
 mn = 1.67492749804e-24
 
 qmc = e / (mp * c)
+qmc = 1
 
 # Чтобы было проще отлаживать
 # qmc = 1e10
 
 V = VectorElement("Lagrange", tetrahedron, 2)
+D = FiniteElement("Lagrange", tetrahedron, 1)
+M = V * D
 R = FiniteElement("Real", tetrahedron, 0)
 
-u = TrialFunction(V)
-v = TestFunction(V)
+velocity, density = TrialFunctions(M)
+v, d = TestFunctions(M)
 
 k = Coefficient(R)
-u0 = Coefficient(V)
+velocity0 = Coefficient(V)
 B = Coefficient(V)
 
-eq = (1 / k) * inner(u - u0, v) * dx - \
-     qmc * inner(B, cross(v, u)) * dx
+# 2-й закон Ньютона + уравнение непрерывности
+eq = (1 / k) * dot(velocity - velocity0, v) * dx + \
+     div(density * velocity0) * d * dx# - \
+     # qmc * dot(cross(velocity, B), v) * dx
+
 a = lhs(eq)
 L = rhs(eq)

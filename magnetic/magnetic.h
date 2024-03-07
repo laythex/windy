@@ -52,6 +52,3241 @@ public:
 
   const char * signature() const final override
   {
+    return "FiniteElement('Lagrange', tetrahedron, 1)";
+  }
+
+  ufc::shape cell_shape() const final override
+  {
+    return ufc::shape::tetrahedron;
+  }
+
+  std::size_t topological_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t geometric_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t space_dimension() const final override
+  {
+    return 4;
+  }
+
+  std::size_t value_rank() const final override
+  {
+    return 0;
+  }
+
+  std::size_t value_dimension(std::size_t i) const final override
+  {
+    return 1;
+  }
+
+  std::size_t value_size() const final override
+  {
+    return 1;
+  }
+
+  std::size_t reference_value_rank() const final override
+  {
+    return 0;
+  }
+
+  std::size_t reference_value_dimension(std::size_t i) const final override
+  {
+    return 1;
+  }
+
+  std::size_t reference_value_size() const final override
+  {
+    return 1;
+  }
+
+  std::size_t degree() const final override
+  {
+    return 1;
+  }
+
+  const char * family() const final override
+  {
+    return "Lagrange";
+  }
+
+  void evaluate_reference_basis(double * reference_values,
+                                std::size_t num_points,
+                                const double * X) const final override
+  {
+    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
+    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
+    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
+    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
+    for (std::size_t k = 0; k < num_points * 4; ++k)
+        reference_values[k] = 0.0;
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        // Map from UFC reference coordinate X to FIAT reference coordinate Y
+        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
+        // Compute basisvalues for each relevant embedded degree
+        double basisvalues1[4] = {};
+        basisvalues1[0] = 1.0;
+        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues1[1] = tmp1_1;
+        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
+        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
+        basisvalues1[0] *= std::sqrt(0.75);
+        basisvalues1[3] *= std::sqrt(1.25);
+        basisvalues1[2] *= std::sqrt(2.5);
+        basisvalues1[1] *= std::sqrt(7.5);
+        // Accumulate products of coefficients and basisvalues
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[4 * ip] += coefficients0[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[4 * ip + 1] += coefficients1[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[4 * ip + 2] += coefficients2[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[4 * ip + 3] += coefficients3[0][r] * basisvalues1[r];
+    }
+  }
+
+  void evaluate_reference_basis_derivatives(double * reference_values,
+                                            std::size_t order,
+                                            std::size_t num_points,
+                                            const double * X) const final override
+  {
+    if (order == 0)
+    {
+        evaluate_reference_basis(reference_values, num_points, X);
+        return;
+    }
+    const std::size_t num_derivatives = std::pow(3, order);
+    std::fill_n(reference_values, num_points * 4 * num_derivatives, 0.0);
+    if (order > 1)
+        return;
+    // Tables of derivatives of the polynomial base (transpose).
+    alignas(32) static const double dmats0[3][4][4] =
+        { { { 0.0, 0.0, 0.0, 0.0 },
+            { 6.324555320336758, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0 },
+            { 3.162277660168379, 0.0, 0.0, 0.0 },
+            { 5.477225575051663, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0 },
+            { 3.162277660168379, 0.0, 0.0, 0.0 },
+            { 1.8257418583505542, 0.0, 0.0, 0.0 },
+            { 5.163977794943223, 0.0, 0.0, 0.0 } } };
+    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
+    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
+    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
+    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
+    const std::size_t reference_offset[4] = {};
+    const std::size_t num_components[4] = { 1, 1, 1, 1 };
+    // Precomputed combinations
+    const std::size_t combinations[1][3][1] =
+        { { { 0 },
+            { 1 },
+            { 2 } } };
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        // Map from UFC reference coordinate X to FIAT reference coordinate Y
+        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
+        // Compute basisvalues for each relevant embedded degree
+        double basisvalues1[4] = {};
+        basisvalues1[0] = 1.0;
+        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues1[1] = tmp1_1;
+        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
+        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
+        basisvalues1[0] *= std::sqrt(0.75);
+        basisvalues1[3] *= std::sqrt(1.25);
+        basisvalues1[2] *= std::sqrt(2.5);
+        basisvalues1[1] *= std::sqrt(7.5);
+        // Loop over all dofs
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            double derivatives[3] = {};
+            switch (i)
+            {
+            case 0:
+                // Compute reference derivatives for dof 0.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 1:
+                // Compute reference derivatives for dof 1.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 2:
+                // Compute reference derivatives for dof 2.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 3:
+                // Compute reference derivatives for dof 3.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            }
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t c = 0; c < num_components[i]; ++c)
+                    reference_values[4 * num_derivatives * ip + num_derivatives * i + r + (reference_offset[i] + c)] = derivatives[num_derivatives * c + r];
+        }
+    }
+  }
+
+  void transform_reference_basis_derivatives(double * values,
+                                             std::size_t order,
+                                             std::size_t num_points,
+                                             const double * reference_values,
+                                             const double * X,
+                                             const double * J,
+                                             const double * detJ,
+                                             const double * K,
+                                             int cell_orientation) const final override
+  {
+    const std::size_t num_derivatives = std::pow(3, order);
+    // Precomputed combinations
+    const std::size_t combinations[1][3][1] =
+        { { { 0 },
+            { 1 },
+            { 2 } } };
+    std::fill_n(values, num_points * 4 * num_derivatives, 0.0);
+    const std::size_t reference_offsets[4] = {};
+    const std::size_t physical_offsets[4] = {};
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        double transform[3][3];
+        for (std::size_t r = 0; r < num_derivatives; ++r)
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+                transform[r][s] = 1.0;
+        for (std::size_t r = 0; r < num_derivatives; ++r)
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+                for (std::size_t k = 0; k < order; ++k)
+                    transform[r][s] *= K[3 * 3 * ip + 3 * combinations[order - 1][s][k] + combinations[order - 1][r][k]];
+        for (std::size_t d = 0; d < 4; ++d)
+        {
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+            {
+                for (std::size_t i = 0; i < 1; ++i)
+                {
+                    // Using affine transform to map values back to the physical element.
+                    const double mapped_value = reference_values[4 * num_derivatives * ip + num_derivatives * d + s + reference_offsets[d]];
+                    // Mapping derivatives back to the physical element
+                    for (std::size_t r = 0; r < num_derivatives; ++r)
+                        values[4 * num_derivatives * ip + num_derivatives * d + r + (physical_offsets[d] + i)] += transform[r][s] * mapped_value;
+                }
+            }
+        }
+    }
+  }
+
+  void evaluate_basis(std::size_t i,
+                      double * values,
+                      const double * x,
+                      const double * coordinate_dofs,
+                      int cell_orientation,
+                      const ufc::coordinate_mapping * cm=nullptr
+                      ) const final override
+  {
+    double X[3] = {};
+    double J[9];
+    double detJ;
+    double K[9];
+    if (cm)
+    {
+        cm->compute_reference_geometry(X, J, &detJ, K, 1, x, coordinate_dofs, cell_orientation);
+    }
+    else
+    {
+        compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
+        compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
+        // Compute constants
+        const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
+        const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
+        const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
+        // Compute subdeterminants
+        const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
+        // Get coordinates and map to the reference (FIAT) element
+        double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
+        // Map to FFC reference coordinate
+        for (std::size_t k = 0; k < 3; ++k)
+            X[k] = (Y[k] + 1.0) / 2.0;
+    }
+    // Evaluate basis on reference element
+    double ref_values[4];
+    evaluate_reference_basis(ref_values, 1, X);
+    // Push forward
+    double physical_values[4];
+    transform_reference_basis_derivatives(physical_values, 0, 1, ref_values, X, J, &detJ, K, cell_orientation);
+    for (std::size_t k = 0; k < 1; ++k)
+        values[k] = physical_values[i + k];
+  }
+
+  void evaluate_basis_all(double * values,
+                          const double * x,
+                          const double * coordinate_dofs,
+                          int cell_orientation,
+                          const ufc::coordinate_mapping * cm=nullptr
+                          ) const final override
+  {
+    // Helper variable to hold value of a single dof.
+    double dof_values = 0.0;
+    // Loop dofs and call evaluate_basis
+    for (std::size_t r = 0; r < 4; ++r)
+    {
+        evaluate_basis(r, &dof_values, x, coordinate_dofs, cell_orientation);
+        values[r] = dof_values;
+    }
+  }
+
+  void evaluate_basis_derivatives(std::size_t i,
+                                  std::size_t n,
+                                  double * values,
+                                  const double * x,
+                                  const double * coordinate_dofs,
+                                  int cell_orientation,
+                                  const ufc::coordinate_mapping * cm=nullptr
+                                  ) const final override
+  {
+    std::size_t num_derivatives = std::pow(3, n);
+    std::fill_n(values, num_derivatives, 0.0);
+    // Call evaluate_basis_all if order of derivatives is equal to zero.
+    if (n == 0)
+    {
+        evaluate_basis(i, values, x, coordinate_dofs, cell_orientation);
+        return;
+    }
+    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
+    if (n > 1)
+        return;
+    // Compute Jacobian
+    double J[9];
+    compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
+    // Compute Inverse Jacobian and determinant
+    double K[9];
+    double detJ;
+    compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
+    // Compute constants
+    const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
+    const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
+    const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
+    // Compute subdeterminants
+    const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
+    // Get coordinates and map to the reference (FIAT) element
+    double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
+    // Precomputed combinations
+    const std::size_t combinations[1][3][1] =
+        { { { 0 },
+            { 1 },
+            { 2 } } };
+    // Declare transformation matrix
+    double transform[3][3] =
+        { { 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0 } };
+    // Construct transformation matrix
+    for (std::size_t row = 0; row < num_derivatives; ++row)
+        for (std::size_t col = 0; col < num_derivatives; ++col)
+            for (std::size_t k = 0; k < n; ++k)
+                transform[row][col] *= K[3 * combinations[n - 1][col][k] + combinations[n - 1][row][k]];
+    switch (i)
+    {
+    case 0:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 1:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 2:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 3:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    }
+  }
+
+  void evaluate_basis_derivatives_all(std::size_t n,
+                                      double * values,
+                                      const double * x,
+                                      const double * coordinate_dofs,
+                                      int cell_orientation,
+                                      const ufc::coordinate_mapping * cm=nullptr
+                                      ) const final override
+  {
+    // Call evaluate_basis_all if order of derivatives is equal to zero.
+    if (n == 0)
+    {
+        evaluate_basis_all(values, x, coordinate_dofs, cell_orientation);
+        return;
+    }
+    unsigned int num_derivatives = std::pow(3, n);
+    // Set values equal to zero.
+    std::fill_n(values, num_derivatives * 4, 0.0);
+    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
+    if (n > 1)
+        return;
+    // Helper variable to hold values of a single dof.
+    double dof_values[3] = {};
+    // Loop dofs and call evaluate_basis_derivatives.
+    for (std::size_t r = 0; r < 4; ++r)
+    {
+        evaluate_basis_derivatives(r, n, dof_values, x, coordinate_dofs, cell_orientation);
+        for (std::size_t s = 0; s < num_derivatives; ++s)
+            values[num_derivatives * r + s] = dof_values[s];
+    }
+  }
+
+  double evaluate_dof(std::size_t i,
+                      const ufc::function& f,
+                      const double * coordinate_dofs,
+                      int cell_orientation,
+                      const ufc::cell& c,
+                      const ufc::coordinate_mapping * cm=nullptr
+                      ) const final override
+  {
+    // Declare variables for result of evaluation
+    double vals[1];
+    // Declare variable for physical coordinates
+    double y[3];
+    switch (i)
+    {
+    case 0:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 1:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 2:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 3:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    }
+    return 0.0;
+  }
+
+  void evaluate_dofs(double * values,
+                             const ufc::function& f,
+                             const double * coordinate_dofs,
+                             int cell_orientation,
+                             const ufc::cell& c,
+                             const ufc::coordinate_mapping * cm=nullptr
+                             ) const final override
+  {
+    // Declare variables for result of evaluation
+    double vals[1];
+    // Declare variable for physical coordinates
+    double y[3];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[0] = vals[0];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[1] = vals[0];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[2] = vals[0];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[3] = vals[0];
+  }
+
+  void interpolate_vertex_values(double * vertex_values,
+                                 const double * dof_values,
+                                 const double * coordinate_dofs,
+                                 int cell_orientation,
+                                 const ufc::coordinate_mapping * cm=nullptr
+                                 ) const final override
+  {
+    // Evaluate function and change variables
+    vertex_values[0] = dof_values[0];
+    vertex_values[1] = dof_values[1];
+    vertex_values[2] = dof_values[2];
+    vertex_values[3] = dof_values[3];
+  }
+
+  void tabulate_dof_coordinates(double * dof_coordinates,
+                                const double * coordinate_dofs,
+                                const ufc::coordinate_mapping * cm=nullptr
+                                ) const final override
+  {
+    dof_coordinates[0] = coordinate_dofs[0];
+    dof_coordinates[1] = coordinate_dofs[1];
+    dof_coordinates[2] = coordinate_dofs[2];
+    dof_coordinates[3] = coordinate_dofs[3];
+    dof_coordinates[3 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 2] = coordinate_dofs[6];
+    dof_coordinates[3 * 2 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 2 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 3] = coordinate_dofs[9];
+    dof_coordinates[3 * 3 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 3 + 2] = coordinate_dofs[11];
+  }
+
+  void tabulate_reference_dof_coordinates(double * reference_dof_coordinates) const final override
+  {
+    static const double dof_X[12] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
+    std::copy_n(dof_X, 12, reference_dof_coordinates);
+  }
+
+  std::size_t num_sub_elements() const final override
+  {
+    return 0;
+  }
+
+  ufc::finite_element * create_sub_element(std::size_t i) const final override
+  {
+    return nullptr;
+  }
+
+  ufc::finite_element * create() const final override
+  {
+    return new magnetic_finite_element_0();
+  }
+
+};
+
+
+class magnetic_finite_element_1: public ufc::finite_element
+{
+public:
+
+  magnetic_finite_element_1() : ufc::finite_element()
+  {
+    // Do nothing
+  }
+
+  ~magnetic_finite_element_1() override
+  {
+    // Do nothing
+  }
+
+  const char * signature() const final override
+  {
+    return "VectorElement(FiniteElement('Lagrange', tetrahedron, 1), dim=3)";
+  }
+
+  ufc::shape cell_shape() const final override
+  {
+    return ufc::shape::tetrahedron;
+  }
+
+  std::size_t topological_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t geometric_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t space_dimension() const final override
+  {
+    return 12;
+  }
+
+  std::size_t value_rank() const final override
+  {
+    return 1;
+  }
+
+  std::size_t value_dimension(std::size_t i) const final override
+  {
+    static const int return_values[1] = { 3 };
+    if (i >= 1)
+        return 1;
+    return return_values[i];
+  }
+
+  std::size_t value_size() const final override
+  {
+    return 3;
+  }
+
+  std::size_t reference_value_rank() const final override
+  {
+    return 1;
+  }
+
+  std::size_t reference_value_dimension(std::size_t i) const final override
+  {
+    static const int return_values[1] = { 3 };
+    if (i >= 1)
+        return 1;
+    return return_values[i];
+  }
+
+  std::size_t reference_value_size() const final override
+  {
+    return 3;
+  }
+
+  std::size_t degree() const final override
+  {
+    return 1;
+  }
+
+  const char * family() const final override
+  {
+    return "Lagrange";
+  }
+
+  void evaluate_reference_basis(double * reference_values,
+                                std::size_t num_points,
+                                const double * X) const final override
+  {
+    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
+    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
+    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
+    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
+    for (std::size_t k = 0; k < num_points * 12 * 3; ++k)
+        reference_values[k] = 0.0;
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        // Map from UFC reference coordinate X to FIAT reference coordinate Y
+        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
+        // Compute basisvalues for each relevant embedded degree
+        double basisvalues1[4] = {};
+        basisvalues1[0] = 1.0;
+        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues1[1] = tmp1_1;
+        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
+        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
+        basisvalues1[0] *= std::sqrt(0.75);
+        basisvalues1[3] *= std::sqrt(1.25);
+        basisvalues1[2] *= std::sqrt(2.5);
+        basisvalues1[1] *= std::sqrt(7.5);
+        // Accumulate products of coefficients and basisvalues
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip] += coefficients0[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3] += coefficients1[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 2] += coefficients2[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 3] += coefficients3[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 4 + 1] += coefficients0[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 5 + 1] += coefficients1[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 6 + 1] += coefficients2[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 7 + 1] += coefficients3[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 8 + 2] += coefficients0[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 9 + 2] += coefficients1[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 10 + 2] += coefficients2[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[12 * 3 * ip + 3 * 11 + 2] += coefficients3[0][r] * basisvalues1[r];
+    }
+  }
+
+  void evaluate_reference_basis_derivatives(double * reference_values,
+                                            std::size_t order,
+                                            std::size_t num_points,
+                                            const double * X) const final override
+  {
+    if (order == 0)
+    {
+        evaluate_reference_basis(reference_values, num_points, X);
+        return;
+    }
+    const std::size_t num_derivatives = std::pow(3, order);
+    std::fill_n(reference_values, num_points * 12 * num_derivatives * 3, 0.0);
+    if (order > 1)
+        return;
+    // Tables of derivatives of the polynomial base (transpose).
+    alignas(32) static const double dmats0[3][4][4] =
+        { { { 0.0, 0.0, 0.0, 0.0 },
+            { 6.324555320336758, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0 },
+            { 3.162277660168379, 0.0, 0.0, 0.0 },
+            { 5.477225575051663, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0 },
+            { 3.162277660168379, 0.0, 0.0, 0.0 },
+            { 1.8257418583505542, 0.0, 0.0, 0.0 },
+            { 5.163977794943223, 0.0, 0.0, 0.0 } } };
+    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
+    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
+    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
+    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
+    const std::size_t reference_offset[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
+    const std::size_t num_components[12] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    // Precomputed combinations
+    const std::size_t combinations[1][3][1] =
+        { { { 0 },
+            { 1 },
+            { 2 } } };
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        // Map from UFC reference coordinate X to FIAT reference coordinate Y
+        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
+        // Compute basisvalues for each relevant embedded degree
+        double basisvalues1[4] = {};
+        basisvalues1[0] = 1.0;
+        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues1[1] = tmp1_1;
+        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
+        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
+        basisvalues1[0] *= std::sqrt(0.75);
+        basisvalues1[3] *= std::sqrt(1.25);
+        basisvalues1[2] *= std::sqrt(2.5);
+        basisvalues1[1] *= std::sqrt(7.5);
+        // Loop over all dofs
+        for (std::size_t i = 0; i < 12; ++i)
+        {
+            double derivatives[3] = {};
+            switch (i)
+            {
+            case 0:
+                // Compute reference derivatives for dof 0.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 1:
+                // Compute reference derivatives for dof 1.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 2:
+                // Compute reference derivatives for dof 2.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 3:
+                // Compute reference derivatives for dof 3.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            case 4:
+                // Compute reference derivatives for dof 4.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 5:
+                // Compute reference derivatives for dof 5.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 6:
+                // Compute reference derivatives for dof 6.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 7:
+                // Compute reference derivatives for dof 7.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            case 8:
+                // Compute reference derivatives for dof 8.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 9:
+                // Compute reference derivatives for dof 9.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 10:
+                // Compute reference derivatives for dof 10.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 11:
+                // Compute reference derivatives for dof 11.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            }
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t c = 0; c < num_components[i]; ++c)
+                    reference_values[12 * (num_derivatives * 3) * ip + num_derivatives * 3 * i + 3 * r + (reference_offset[i] + c)] = derivatives[num_derivatives * c + r];
+        }
+    }
+  }
+
+  void transform_reference_basis_derivatives(double * values,
+                                             std::size_t order,
+                                             std::size_t num_points,
+                                             const double * reference_values,
+                                             const double * X,
+                                             const double * J,
+                                             const double * detJ,
+                                             const double * K,
+                                             int cell_orientation) const final override
+  {
+    const std::size_t num_derivatives = std::pow(3, order);
+    // Precomputed combinations
+    const std::size_t combinations[1][3][1] =
+        { { { 0 },
+            { 1 },
+            { 2 } } };
+    std::fill_n(values, num_points * 12 * num_derivatives * 3, 0.0);
+    const std::size_t reference_offsets[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
+    const std::size_t physical_offsets[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        double transform[3][3];
+        for (std::size_t r = 0; r < num_derivatives; ++r)
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+                transform[r][s] = 1.0;
+        for (std::size_t r = 0; r < num_derivatives; ++r)
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+                for (std::size_t k = 0; k < order; ++k)
+                    transform[r][s] *= K[3 * 3 * ip + 3 * combinations[order - 1][s][k] + combinations[order - 1][r][k]];
+        for (std::size_t d = 0; d < 12; ++d)
+        {
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+            {
+                for (std::size_t i = 0; i < 1; ++i)
+                {
+                    // Using affine transform to map values back to the physical element.
+                    const double mapped_value = reference_values[12 * (num_derivatives * 3) * ip + num_derivatives * 3 * d + 3 * s + reference_offsets[d]];
+                    // Mapping derivatives back to the physical element
+                    for (std::size_t r = 0; r < num_derivatives; ++r)
+                        values[12 * (num_derivatives * 3) * ip + num_derivatives * 3 * d + 3 * r + (physical_offsets[d] + i)] += transform[r][s] * mapped_value;
+                }
+            }
+        }
+    }
+  }
+
+  void evaluate_basis(std::size_t i,
+                      double * values,
+                      const double * x,
+                      const double * coordinate_dofs,
+                      int cell_orientation,
+                      const ufc::coordinate_mapping * cm=nullptr
+                      ) const final override
+  {
+    double X[3] = {};
+    double J[9];
+    double detJ;
+    double K[9];
+    if (cm)
+    {
+        cm->compute_reference_geometry(X, J, &detJ, K, 1, x, coordinate_dofs, cell_orientation);
+    }
+    else
+    {
+        compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
+        compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
+        // Compute constants
+        const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
+        const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
+        const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
+        // Compute subdeterminants
+        const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
+        // Get coordinates and map to the reference (FIAT) element
+        double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
+        // Map to FFC reference coordinate
+        for (std::size_t k = 0; k < 3; ++k)
+            X[k] = (Y[k] + 1.0) / 2.0;
+    }
+    // Evaluate basis on reference element
+    double ref_values[36];
+    evaluate_reference_basis(ref_values, 1, X);
+    // Push forward
+    double physical_values[36];
+    transform_reference_basis_derivatives(physical_values, 0, 1, ref_values, X, J, &detJ, K, cell_orientation);
+    for (std::size_t k = 0; k < 3; ++k)
+        values[k] = physical_values[3 * i + k];
+  }
+
+  void evaluate_basis_all(double * values,
+                          const double * x,
+                          const double * coordinate_dofs,
+                          int cell_orientation,
+                          const ufc::coordinate_mapping * cm=nullptr
+                          ) const final override
+  {
+    // Helper variable to hold values of a single dof.
+    double dof_values[3] = {};
+    // Loop dofs and call evaluate_basis
+    for (std::size_t r = 0; r < 12; ++r)
+    {
+        evaluate_basis(r, dof_values, x, coordinate_dofs, cell_orientation);
+        for (std::size_t s = 0; s < 3; ++s)
+            values[r * 3 + s] = dof_values[s];
+    }
+  }
+
+  void evaluate_basis_derivatives(std::size_t i,
+                                  std::size_t n,
+                                  double * values,
+                                  const double * x,
+                                  const double * coordinate_dofs,
+                                  int cell_orientation,
+                                  const ufc::coordinate_mapping * cm=nullptr
+                                  ) const final override
+  {
+    std::size_t num_derivatives = std::pow(3, n);
+    std::fill_n(values, 3 * num_derivatives, 0.0);
+    // Call evaluate_basis_all if order of derivatives is equal to zero.
+    if (n == 0)
+    {
+        evaluate_basis(i, values, x, coordinate_dofs, cell_orientation);
+        return;
+    }
+    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
+    if (n > 1)
+        return;
+    // Compute Jacobian
+    double J[9];
+    compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
+    // Compute Inverse Jacobian and determinant
+    double K[9];
+    double detJ;
+    compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
+    // Compute constants
+    const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
+    const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
+    const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
+    // Compute subdeterminants
+    const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
+    // Get coordinates and map to the reference (FIAT) element
+    double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
+    // Precomputed combinations
+    const std::size_t combinations[1][3][1] =
+        { { { 0 },
+            { 1 },
+            { 2 } } };
+    // Declare transformation matrix
+    double transform[3][3] =
+        { { 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0 } };
+    // Construct transformation matrix
+    for (std::size_t row = 0; row < num_derivatives; ++row)
+        for (std::size_t col = 0; col < num_derivatives; ++col)
+            for (std::size_t k = 0; k < n; ++k)
+                transform[row][col] *= K[3 * combinations[n - 1][col][k] + combinations[n - 1][row][k]];
+    switch (i)
+    {
+    case 0:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 1:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 2:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 3:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 4:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 5:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 6:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 7:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 8:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 9:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 10:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 11:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[3] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    }
+  }
+
+  void evaluate_basis_derivatives_all(std::size_t n,
+                                      double * values,
+                                      const double * x,
+                                      const double * coordinate_dofs,
+                                      int cell_orientation,
+                                      const ufc::coordinate_mapping * cm=nullptr
+                                      ) const final override
+  {
+    // Call evaluate_basis_all if order of derivatives is equal to zero.
+    if (n == 0)
+    {
+        evaluate_basis_all(values, x, coordinate_dofs, cell_orientation);
+        return;
+    }
+    unsigned int num_derivatives = std::pow(3, n);
+    // Set values equal to zero.
+    std::fill_n(values, 3 * num_derivatives * 12, 0.0);
+    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
+    if (n > 1)
+        return;
+    // Helper variable to hold values of a single dof.
+    double dof_values[9] = {};
+    // Loop dofs and call evaluate_basis_derivatives.
+    for (std::size_t r = 0; r < 12; ++r)
+    {
+        evaluate_basis_derivatives(r, n, dof_values, x, coordinate_dofs, cell_orientation);
+        for (std::size_t s = 0; s < 3 * num_derivatives; ++s)
+            values[3 * num_derivatives * r + s] = dof_values[s];
+    }
+  }
+
+  double evaluate_dof(std::size_t i,
+                      const ufc::function& f,
+                      const double * coordinate_dofs,
+                      int cell_orientation,
+                      const ufc::cell& c,
+                      const ufc::coordinate_mapping * cm=nullptr
+                      ) const final override
+  {
+    // Declare variables for result of evaluation
+    double vals[3];
+    // Declare variable for physical coordinates
+    double y[3];
+    switch (i)
+    {
+    case 0:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 1:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 2:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 3:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 4:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 5:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 6:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 7:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 8:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 9:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 10:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 11:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    }
+    return 0.0;
+  }
+
+  void evaluate_dofs(double * values,
+                             const ufc::function& f,
+                             const double * coordinate_dofs,
+                             int cell_orientation,
+                             const ufc::cell& c,
+                             const ufc::coordinate_mapping * cm=nullptr
+                             ) const final override
+  {
+    // Declare variables for result of evaluation
+    double vals[3];
+    // Declare variable for physical coordinates
+    double y[3];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[0] = vals[0];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[1] = vals[0];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[2] = vals[0];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[3] = vals[0];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[4] = vals[1];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[5] = vals[1];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[6] = vals[1];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[7] = vals[1];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[8] = vals[2];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[9] = vals[2];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[10] = vals[2];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[11] = vals[2];
+  }
+
+  void interpolate_vertex_values(double * vertex_values,
+                                 const double * dof_values,
+                                 const double * coordinate_dofs,
+                                 int cell_orientation,
+                                 const ufc::coordinate_mapping * cm=nullptr
+                                 ) const final override
+  {
+    // Evaluate function and change variables
+    vertex_values[0] = dof_values[0];
+    vertex_values[3] = dof_values[1];
+    vertex_values[6] = dof_values[2];
+    vertex_values[9] = dof_values[3];
+    // Evaluate function and change variables
+    vertex_values[1] = dof_values[4];
+    vertex_values[4] = dof_values[5];
+    vertex_values[7] = dof_values[6];
+    vertex_values[10] = dof_values[7];
+    // Evaluate function and change variables
+    vertex_values[2] = dof_values[8];
+    vertex_values[5] = dof_values[9];
+    vertex_values[8] = dof_values[10];
+    vertex_values[11] = dof_values[11];
+  }
+
+  void tabulate_dof_coordinates(double * dof_coordinates,
+                                const double * coordinate_dofs,
+                                const ufc::coordinate_mapping * cm=nullptr
+                                ) const final override
+  {
+    dof_coordinates[0] = coordinate_dofs[0];
+    dof_coordinates[1] = coordinate_dofs[1];
+    dof_coordinates[2] = coordinate_dofs[2];
+    dof_coordinates[3] = coordinate_dofs[3];
+    dof_coordinates[3 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 2] = coordinate_dofs[6];
+    dof_coordinates[3 * 2 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 2 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 3] = coordinate_dofs[9];
+    dof_coordinates[3 * 3 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 3 + 2] = coordinate_dofs[11];
+    dof_coordinates[3 * 4] = coordinate_dofs[0];
+    dof_coordinates[3 * 4 + 1] = coordinate_dofs[1];
+    dof_coordinates[3 * 4 + 2] = coordinate_dofs[2];
+    dof_coordinates[3 * 5] = coordinate_dofs[3];
+    dof_coordinates[3 * 5 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 * 5 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 6] = coordinate_dofs[6];
+    dof_coordinates[3 * 6 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 6 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 7] = coordinate_dofs[9];
+    dof_coordinates[3 * 7 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 7 + 2] = coordinate_dofs[11];
+    dof_coordinates[3 * 8] = coordinate_dofs[0];
+    dof_coordinates[3 * 8 + 1] = coordinate_dofs[1];
+    dof_coordinates[3 * 8 + 2] = coordinate_dofs[2];
+    dof_coordinates[3 * 9] = coordinate_dofs[3];
+    dof_coordinates[3 * 9 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 * 9 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 10] = coordinate_dofs[6];
+    dof_coordinates[3 * 10 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 10 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 11] = coordinate_dofs[9];
+    dof_coordinates[3 * 11 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 11 + 2] = coordinate_dofs[11];
+  }
+
+  void tabulate_reference_dof_coordinates(double * reference_dof_coordinates) const final override
+  {
+    static const double dof_X[36] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
+    std::copy_n(dof_X, 36, reference_dof_coordinates);
+  }
+
+  std::size_t num_sub_elements() const final override
+  {
+    return 3;
+  }
+
+  ufc::finite_element * create_sub_element(std::size_t i) const final override
+  {
+    switch (i)
+    {
+    case 0:
+        return new magnetic_finite_element_0();
+    case 1:
+        return new magnetic_finite_element_0();
+    case 2:
+        return new magnetic_finite_element_0();
+    default:
+        return nullptr;
+    }
+  }
+
+  ufc::finite_element * create() const final override
+  {
+    return new magnetic_finite_element_1();
+  }
+
+};
+
+
+class magnetic_finite_element_2: public ufc::finite_element
+{
+public:
+
+  magnetic_finite_element_2() : ufc::finite_element()
+  {
+    // Do nothing
+  }
+
+  ~magnetic_finite_element_2() override
+  {
+    // Do nothing
+  }
+
+  const char * signature() const final override
+  {
     return "FiniteElement('Lagrange', tetrahedron, 2)";
   }
 
@@ -2497,22 +5732,22 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_0();
+    return new magnetic_finite_element_2();
   }
 
 };
 
 
-class magnetic_finite_element_1: public ufc::finite_element
+class magnetic_finite_element_3: public ufc::finite_element
 {
 public:
 
-  magnetic_finite_element_1() : ufc::finite_element()
+  magnetic_finite_element_3() : ufc::finite_element()
   {
     // Do nothing
   }
 
-  ~magnetic_finite_element_1() override
+  ~magnetic_finite_element_3() override
   {
     // Do nothing
   }
@@ -8799,3241 +12034,6 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_0();
-    case 1:
-        return new magnetic_finite_element_0();
-    case 2:
-        return new magnetic_finite_element_0();
-    default:
-        return nullptr;
-    }
-  }
-
-  ufc::finite_element * create() const final override
-  {
-    return new magnetic_finite_element_1();
-  }
-
-};
-
-
-class magnetic_finite_element_2: public ufc::finite_element
-{
-public:
-
-  magnetic_finite_element_2() : ufc::finite_element()
-  {
-    // Do nothing
-  }
-
-  ~magnetic_finite_element_2() override
-  {
-    // Do nothing
-  }
-
-  const char * signature() const final override
-  {
-    return "FiniteElement('Lagrange', tetrahedron, 1)";
-  }
-
-  ufc::shape cell_shape() const final override
-  {
-    return ufc::shape::tetrahedron;
-  }
-
-  std::size_t topological_dimension() const final override
-  {
-    return 3;
-  }
-
-  std::size_t geometric_dimension() const final override
-  {
-    return 3;
-  }
-
-  std::size_t space_dimension() const final override
-  {
-    return 4;
-  }
-
-  std::size_t value_rank() const final override
-  {
-    return 0;
-  }
-
-  std::size_t value_dimension(std::size_t i) const final override
-  {
-    return 1;
-  }
-
-  std::size_t value_size() const final override
-  {
-    return 1;
-  }
-
-  std::size_t reference_value_rank() const final override
-  {
-    return 0;
-  }
-
-  std::size_t reference_value_dimension(std::size_t i) const final override
-  {
-    return 1;
-  }
-
-  std::size_t reference_value_size() const final override
-  {
-    return 1;
-  }
-
-  std::size_t degree() const final override
-  {
-    return 1;
-  }
-
-  const char * family() const final override
-  {
-    return "Lagrange";
-  }
-
-  void evaluate_reference_basis(double * reference_values,
-                                std::size_t num_points,
-                                const double * X) const final override
-  {
-    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
-    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
-    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
-    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
-    for (std::size_t k = 0; k < num_points * 4; ++k)
-        reference_values[k] = 0.0;
-    for (std::size_t ip = 0; ip < num_points; ++ip)
-    {
-        // Map from UFC reference coordinate X to FIAT reference coordinate Y
-        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
-        // Compute basisvalues for each relevant embedded degree
-        double basisvalues1[4] = {};
-        basisvalues1[0] = 1.0;
-        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-        basisvalues1[1] = tmp1_1;
-        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
-        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
-        basisvalues1[0] *= std::sqrt(0.75);
-        basisvalues1[3] *= std::sqrt(1.25);
-        basisvalues1[2] *= std::sqrt(2.5);
-        basisvalues1[1] *= std::sqrt(7.5);
-        // Accumulate products of coefficients and basisvalues
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[4 * ip] += coefficients0[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[4 * ip + 1] += coefficients1[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[4 * ip + 2] += coefficients2[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[4 * ip + 3] += coefficients3[0][r] * basisvalues1[r];
-    }
-  }
-
-  void evaluate_reference_basis_derivatives(double * reference_values,
-                                            std::size_t order,
-                                            std::size_t num_points,
-                                            const double * X) const final override
-  {
-    if (order == 0)
-    {
-        evaluate_reference_basis(reference_values, num_points, X);
-        return;
-    }
-    const std::size_t num_derivatives = std::pow(3, order);
-    std::fill_n(reference_values, num_points * 4 * num_derivatives, 0.0);
-    if (order > 1)
-        return;
-    // Tables of derivatives of the polynomial base (transpose).
-    alignas(32) static const double dmats0[3][4][4] =
-        { { { 0.0, 0.0, 0.0, 0.0 },
-            { 6.324555320336758, 0.0, 0.0, 0.0 },
-            { 0.0, 0.0, 0.0, 0.0 },
-            { 0.0, 0.0, 0.0, 0.0 } },
-          { { 0.0, 0.0, 0.0, 0.0 },
-            { 3.162277660168379, 0.0, 0.0, 0.0 },
-            { 5.477225575051663, 0.0, 0.0, 0.0 },
-            { 0.0, 0.0, 0.0, 0.0 } },
-          { { 0.0, 0.0, 0.0, 0.0 },
-            { 3.162277660168379, 0.0, 0.0, 0.0 },
-            { 1.8257418583505542, 0.0, 0.0, 0.0 },
-            { 5.163977794943223, 0.0, 0.0, 0.0 } } };
-    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
-    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
-    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
-    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
-    const std::size_t reference_offset[4] = {};
-    const std::size_t num_components[4] = { 1, 1, 1, 1 };
-    // Precomputed combinations
-    const std::size_t combinations[1][3][1] =
-        { { { 0 },
-            { 1 },
-            { 2 } } };
-    for (std::size_t ip = 0; ip < num_points; ++ip)
-    {
-        // Map from UFC reference coordinate X to FIAT reference coordinate Y
-        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
-        // Compute basisvalues for each relevant embedded degree
-        double basisvalues1[4] = {};
-        basisvalues1[0] = 1.0;
-        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-        basisvalues1[1] = tmp1_1;
-        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
-        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
-        basisvalues1[0] *= std::sqrt(0.75);
-        basisvalues1[3] *= std::sqrt(1.25);
-        basisvalues1[2] *= std::sqrt(2.5);
-        basisvalues1[1] *= std::sqrt(7.5);
-        // Loop over all dofs
-        for (std::size_t i = 0; i < 4; ++i)
-        {
-            double derivatives[3] = {};
-            switch (i)
-            {
-            case 0:
-                // Compute reference derivatives for dof 0.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients0[0][s] * aux[s];
-                }
-                break;
-            case 1:
-                // Compute reference derivatives for dof 1.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients1[0][s] * aux[s];
-                }
-                break;
-            case 2:
-                // Compute reference derivatives for dof 2.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients2[0][s] * aux[s];
-                }
-                break;
-            case 3:
-                // Compute reference derivatives for dof 3.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients3[0][s] * aux[s];
-                }
-                break;
-            }
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t c = 0; c < num_components[i]; ++c)
-                    reference_values[4 * num_derivatives * ip + num_derivatives * i + r + (reference_offset[i] + c)] = derivatives[num_derivatives * c + r];
-        }
-    }
-  }
-
-  void transform_reference_basis_derivatives(double * values,
-                                             std::size_t order,
-                                             std::size_t num_points,
-                                             const double * reference_values,
-                                             const double * X,
-                                             const double * J,
-                                             const double * detJ,
-                                             const double * K,
-                                             int cell_orientation) const final override
-  {
-    const std::size_t num_derivatives = std::pow(3, order);
-    // Precomputed combinations
-    const std::size_t combinations[1][3][1] =
-        { { { 0 },
-            { 1 },
-            { 2 } } };
-    std::fill_n(values, num_points * 4 * num_derivatives, 0.0);
-    const std::size_t reference_offsets[4] = {};
-    const std::size_t physical_offsets[4] = {};
-    for (std::size_t ip = 0; ip < num_points; ++ip)
-    {
-        double transform[3][3];
-        for (std::size_t r = 0; r < num_derivatives; ++r)
-            for (std::size_t s = 0; s < num_derivatives; ++s)
-                transform[r][s] = 1.0;
-        for (std::size_t r = 0; r < num_derivatives; ++r)
-            for (std::size_t s = 0; s < num_derivatives; ++s)
-                for (std::size_t k = 0; k < order; ++k)
-                    transform[r][s] *= K[3 * 3 * ip + 3 * combinations[order - 1][s][k] + combinations[order - 1][r][k]];
-        for (std::size_t d = 0; d < 4; ++d)
-        {
-            for (std::size_t s = 0; s < num_derivatives; ++s)
-            {
-                for (std::size_t i = 0; i < 1; ++i)
-                {
-                    // Using affine transform to map values back to the physical element.
-                    const double mapped_value = reference_values[4 * num_derivatives * ip + num_derivatives * d + s + reference_offsets[d]];
-                    // Mapping derivatives back to the physical element
-                    for (std::size_t r = 0; r < num_derivatives; ++r)
-                        values[4 * num_derivatives * ip + num_derivatives * d + r + (physical_offsets[d] + i)] += transform[r][s] * mapped_value;
-                }
-            }
-        }
-    }
-  }
-
-  void evaluate_basis(std::size_t i,
-                      double * values,
-                      const double * x,
-                      const double * coordinate_dofs,
-                      int cell_orientation,
-                      const ufc::coordinate_mapping * cm=nullptr
-                      ) const final override
-  {
-    double X[3] = {};
-    double J[9];
-    double detJ;
-    double K[9];
-    if (cm)
-    {
-        cm->compute_reference_geometry(X, J, &detJ, K, 1, x, coordinate_dofs, cell_orientation);
-    }
-    else
-    {
-        compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
-        compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
-        // Compute constants
-        const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
-        const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
-        const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
-        // Compute subdeterminants
-        const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
-        // Get coordinates and map to the reference (FIAT) element
-        double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
-        // Map to FFC reference coordinate
-        for (std::size_t k = 0; k < 3; ++k)
-            X[k] = (Y[k] + 1.0) / 2.0;
-    }
-    // Evaluate basis on reference element
-    double ref_values[4];
-    evaluate_reference_basis(ref_values, 1, X);
-    // Push forward
-    double physical_values[4];
-    transform_reference_basis_derivatives(physical_values, 0, 1, ref_values, X, J, &detJ, K, cell_orientation);
-    for (std::size_t k = 0; k < 1; ++k)
-        values[k] = physical_values[i + k];
-  }
-
-  void evaluate_basis_all(double * values,
-                          const double * x,
-                          const double * coordinate_dofs,
-                          int cell_orientation,
-                          const ufc::coordinate_mapping * cm=nullptr
-                          ) const final override
-  {
-    // Helper variable to hold value of a single dof.
-    double dof_values = 0.0;
-    // Loop dofs and call evaluate_basis
-    for (std::size_t r = 0; r < 4; ++r)
-    {
-        evaluate_basis(r, &dof_values, x, coordinate_dofs, cell_orientation);
-        values[r] = dof_values;
-    }
-  }
-
-  void evaluate_basis_derivatives(std::size_t i,
-                                  std::size_t n,
-                                  double * values,
-                                  const double * x,
-                                  const double * coordinate_dofs,
-                                  int cell_orientation,
-                                  const ufc::coordinate_mapping * cm=nullptr
-                                  ) const final override
-  {
-    std::size_t num_derivatives = std::pow(3, n);
-    std::fill_n(values, num_derivatives, 0.0);
-    // Call evaluate_basis_all if order of derivatives is equal to zero.
-    if (n == 0)
-    {
-        evaluate_basis(i, values, x, coordinate_dofs, cell_orientation);
-        return;
-    }
-    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
-    if (n > 1)
-        return;
-    // Compute Jacobian
-    double J[9];
-    compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
-    // Compute Inverse Jacobian and determinant
-    double K[9];
-    double detJ;
-    compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
-    // Compute constants
-    const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
-    const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
-    const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
-    // Compute subdeterminants
-    const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
-    // Get coordinates and map to the reference (FIAT) element
-    double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
-    // Precomputed combinations
-    const std::size_t combinations[1][3][1] =
-        { { { 0 },
-            { 1 },
-            { 2 } } };
-    // Declare transformation matrix
-    double transform[3][3] =
-        { { 1.0, 1.0, 1.0 },
-          { 1.0, 1.0, 1.0 },
-          { 1.0, 1.0, 1.0 } };
-    // Construct transformation matrix
-    for (std::size_t row = 0; row < num_derivatives; ++row)
-        for (std::size_t col = 0; col < num_derivatives; ++col)
-            for (std::size_t k = 0; k < n; ++k)
-                transform[row][col] *= K[3 * combinations[n - 1][col][k] + combinations[n - 1][row][k]];
-    switch (i)
-    {
-    case 0:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 1:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 2:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 3:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    }
-  }
-
-  void evaluate_basis_derivatives_all(std::size_t n,
-                                      double * values,
-                                      const double * x,
-                                      const double * coordinate_dofs,
-                                      int cell_orientation,
-                                      const ufc::coordinate_mapping * cm=nullptr
-                                      ) const final override
-  {
-    // Call evaluate_basis_all if order of derivatives is equal to zero.
-    if (n == 0)
-    {
-        evaluate_basis_all(values, x, coordinate_dofs, cell_orientation);
-        return;
-    }
-    unsigned int num_derivatives = std::pow(3, n);
-    // Set values equal to zero.
-    std::fill_n(values, num_derivatives * 4, 0.0);
-    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
-    if (n > 1)
-        return;
-    // Helper variable to hold values of a single dof.
-    double dof_values[3] = {};
-    // Loop dofs and call evaluate_basis_derivatives.
-    for (std::size_t r = 0; r < 4; ++r)
-    {
-        evaluate_basis_derivatives(r, n, dof_values, x, coordinate_dofs, cell_orientation);
-        for (std::size_t s = 0; s < num_derivatives; ++s)
-            values[num_derivatives * r + s] = dof_values[s];
-    }
-  }
-
-  double evaluate_dof(std::size_t i,
-                      const ufc::function& f,
-                      const double * coordinate_dofs,
-                      int cell_orientation,
-                      const ufc::cell& c,
-                      const ufc::coordinate_mapping * cm=nullptr
-                      ) const final override
-  {
-    // Declare variables for result of evaluation
-    double vals[1];
-    // Declare variable for physical coordinates
-    double y[3];
-    switch (i)
-    {
-    case 0:
-        {
-            y[0] = coordinate_dofs[0];
-            y[1] = coordinate_dofs[1];
-            y[2] = coordinate_dofs[2];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 1:
-        {
-            y[0] = coordinate_dofs[3];
-            y[1] = coordinate_dofs[4];
-            y[2] = coordinate_dofs[5];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 2:
-        {
-            y[0] = coordinate_dofs[6];
-            y[1] = coordinate_dofs[7];
-            y[2] = coordinate_dofs[8];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 3:
-        {
-            y[0] = coordinate_dofs[9];
-            y[1] = coordinate_dofs[10];
-            y[2] = coordinate_dofs[11];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    }
-    return 0.0;
-  }
-
-  void evaluate_dofs(double * values,
-                             const ufc::function& f,
-                             const double * coordinate_dofs,
-                             int cell_orientation,
-                             const ufc::cell& c,
-                             const ufc::coordinate_mapping * cm=nullptr
-                             ) const final override
-  {
-    // Declare variables for result of evaluation
-    double vals[1];
-    // Declare variable for physical coordinates
-    double y[3];
-    y[0] = coordinate_dofs[0];
-    y[1] = coordinate_dofs[1];
-    y[2] = coordinate_dofs[2];
-    f.evaluate(vals, y, c);
-    values[0] = vals[0];
-    y[0] = coordinate_dofs[3];
-    y[1] = coordinate_dofs[4];
-    y[2] = coordinate_dofs[5];
-    f.evaluate(vals, y, c);
-    values[1] = vals[0];
-    y[0] = coordinate_dofs[6];
-    y[1] = coordinate_dofs[7];
-    y[2] = coordinate_dofs[8];
-    f.evaluate(vals, y, c);
-    values[2] = vals[0];
-    y[0] = coordinate_dofs[9];
-    y[1] = coordinate_dofs[10];
-    y[2] = coordinate_dofs[11];
-    f.evaluate(vals, y, c);
-    values[3] = vals[0];
-  }
-
-  void interpolate_vertex_values(double * vertex_values,
-                                 const double * dof_values,
-                                 const double * coordinate_dofs,
-                                 int cell_orientation,
-                                 const ufc::coordinate_mapping * cm=nullptr
-                                 ) const final override
-  {
-    // Evaluate function and change variables
-    vertex_values[0] = dof_values[0];
-    vertex_values[1] = dof_values[1];
-    vertex_values[2] = dof_values[2];
-    vertex_values[3] = dof_values[3];
-  }
-
-  void tabulate_dof_coordinates(double * dof_coordinates,
-                                const double * coordinate_dofs,
-                                const ufc::coordinate_mapping * cm=nullptr
-                                ) const final override
-  {
-    dof_coordinates[0] = coordinate_dofs[0];
-    dof_coordinates[1] = coordinate_dofs[1];
-    dof_coordinates[2] = coordinate_dofs[2];
-    dof_coordinates[3] = coordinate_dofs[3];
-    dof_coordinates[3 + 1] = coordinate_dofs[4];
-    dof_coordinates[3 + 2] = coordinate_dofs[5];
-    dof_coordinates[3 * 2] = coordinate_dofs[6];
-    dof_coordinates[3 * 2 + 1] = coordinate_dofs[7];
-    dof_coordinates[3 * 2 + 2] = coordinate_dofs[8];
-    dof_coordinates[3 * 3] = coordinate_dofs[9];
-    dof_coordinates[3 * 3 + 1] = coordinate_dofs[10];
-    dof_coordinates[3 * 3 + 2] = coordinate_dofs[11];
-  }
-
-  void tabulate_reference_dof_coordinates(double * reference_dof_coordinates) const final override
-  {
-    static const double dof_X[12] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-    std::copy_n(dof_X, 12, reference_dof_coordinates);
-  }
-
-  std::size_t num_sub_elements() const final override
-  {
-    return 0;
-  }
-
-  ufc::finite_element * create_sub_element(std::size_t i) const final override
-  {
-    return nullptr;
-  }
-
-  ufc::finite_element * create() const final override
-  {
-    return new magnetic_finite_element_2();
-  }
-
-};
-
-
-class magnetic_finite_element_3: public ufc::finite_element
-{
-public:
-
-  magnetic_finite_element_3() : ufc::finite_element()
-  {
-    // Do nothing
-  }
-
-  ~magnetic_finite_element_3() override
-  {
-    // Do nothing
-  }
-
-  const char * signature() const final override
-  {
-    return "VectorElement(FiniteElement('Lagrange', tetrahedron, 1), dim=3)";
-  }
-
-  ufc::shape cell_shape() const final override
-  {
-    return ufc::shape::tetrahedron;
-  }
-
-  std::size_t topological_dimension() const final override
-  {
-    return 3;
-  }
-
-  std::size_t geometric_dimension() const final override
-  {
-    return 3;
-  }
-
-  std::size_t space_dimension() const final override
-  {
-    return 12;
-  }
-
-  std::size_t value_rank() const final override
-  {
-    return 1;
-  }
-
-  std::size_t value_dimension(std::size_t i) const final override
-  {
-    static const int return_values[1] = { 3 };
-    if (i >= 1)
-        return 1;
-    return return_values[i];
-  }
-
-  std::size_t value_size() const final override
-  {
-    return 3;
-  }
-
-  std::size_t reference_value_rank() const final override
-  {
-    return 1;
-  }
-
-  std::size_t reference_value_dimension(std::size_t i) const final override
-  {
-    static const int return_values[1] = { 3 };
-    if (i >= 1)
-        return 1;
-    return return_values[i];
-  }
-
-  std::size_t reference_value_size() const final override
-  {
-    return 3;
-  }
-
-  std::size_t degree() const final override
-  {
-    return 1;
-  }
-
-  const char * family() const final override
-  {
-    return "Lagrange";
-  }
-
-  void evaluate_reference_basis(double * reference_values,
-                                std::size_t num_points,
-                                const double * X) const final override
-  {
-    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
-    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
-    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
-    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
-    for (std::size_t k = 0; k < num_points * 12 * 3; ++k)
-        reference_values[k] = 0.0;
-    for (std::size_t ip = 0; ip < num_points; ++ip)
-    {
-        // Map from UFC reference coordinate X to FIAT reference coordinate Y
-        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
-        // Compute basisvalues for each relevant embedded degree
-        double basisvalues1[4] = {};
-        basisvalues1[0] = 1.0;
-        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-        basisvalues1[1] = tmp1_1;
-        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
-        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
-        basisvalues1[0] *= std::sqrt(0.75);
-        basisvalues1[3] *= std::sqrt(1.25);
-        basisvalues1[2] *= std::sqrt(2.5);
-        basisvalues1[1] *= std::sqrt(7.5);
-        // Accumulate products of coefficients and basisvalues
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip] += coefficients0[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3] += coefficients1[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 2] += coefficients2[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 3] += coefficients3[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 4 + 1] += coefficients0[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 5 + 1] += coefficients1[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 6 + 1] += coefficients2[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 7 + 1] += coefficients3[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 8 + 2] += coefficients0[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 9 + 2] += coefficients1[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 10 + 2] += coefficients2[0][r] * basisvalues1[r];
-        for (std::size_t r = 0; r < 4; ++r)
-            reference_values[12 * 3 * ip + 3 * 11 + 2] += coefficients3[0][r] * basisvalues1[r];
-    }
-  }
-
-  void evaluate_reference_basis_derivatives(double * reference_values,
-                                            std::size_t order,
-                                            std::size_t num_points,
-                                            const double * X) const final override
-  {
-    if (order == 0)
-    {
-        evaluate_reference_basis(reference_values, num_points, X);
-        return;
-    }
-    const std::size_t num_derivatives = std::pow(3, order);
-    std::fill_n(reference_values, num_points * 12 * num_derivatives * 3, 0.0);
-    if (order > 1)
-        return;
-    // Tables of derivatives of the polynomial base (transpose).
-    alignas(32) static const double dmats0[3][4][4] =
-        { { { 0.0, 0.0, 0.0, 0.0 },
-            { 6.324555320336758, 0.0, 0.0, 0.0 },
-            { 0.0, 0.0, 0.0, 0.0 },
-            { 0.0, 0.0, 0.0, 0.0 } },
-          { { 0.0, 0.0, 0.0, 0.0 },
-            { 3.162277660168379, 0.0, 0.0, 0.0 },
-            { 5.477225575051663, 0.0, 0.0, 0.0 },
-            { 0.0, 0.0, 0.0, 0.0 } },
-          { { 0.0, 0.0, 0.0, 0.0 },
-            { 3.162277660168379, 0.0, 0.0, 0.0 },
-            { 1.8257418583505542, 0.0, 0.0, 0.0 },
-            { 5.163977794943223, 0.0, 0.0, 0.0 } } };
-    static const double coefficients0[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
-    static const double coefficients1[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
-    static const double coefficients2[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
-    static const double coefficients3[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
-    const std::size_t reference_offset[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
-    const std::size_t num_components[12] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-    // Precomputed combinations
-    const std::size_t combinations[1][3][1] =
-        { { { 0 },
-            { 1 },
-            { 2 } } };
-    for (std::size_t ip = 0; ip < num_points; ++ip)
-    {
-        // Map from UFC reference coordinate X to FIAT reference coordinate Y
-        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
-        // Compute basisvalues for each relevant embedded degree
-        double basisvalues1[4] = {};
-        basisvalues1[0] = 1.0;
-        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-        basisvalues1[1] = tmp1_1;
-        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
-        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
-        basisvalues1[0] *= std::sqrt(0.75);
-        basisvalues1[3] *= std::sqrt(1.25);
-        basisvalues1[2] *= std::sqrt(2.5);
-        basisvalues1[1] *= std::sqrt(7.5);
-        // Loop over all dofs
-        for (std::size_t i = 0; i < 12; ++i)
-        {
-            double derivatives[3] = {};
-            switch (i)
-            {
-            case 0:
-                // Compute reference derivatives for dof 0.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients0[0][s] * aux[s];
-                }
-                break;
-            case 1:
-                // Compute reference derivatives for dof 1.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients1[0][s] * aux[s];
-                }
-                break;
-            case 2:
-                // Compute reference derivatives for dof 2.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients2[0][s] * aux[s];
-                }
-                break;
-            case 3:
-                // Compute reference derivatives for dof 3.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients3[0][s] * aux[s];
-                }
-                break;
-            case 4:
-                // Compute reference derivatives for dof 4.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients0[0][s] * aux[s];
-                }
-                break;
-            case 5:
-                // Compute reference derivatives for dof 5.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients1[0][s] * aux[s];
-                }
-                break;
-            case 6:
-                // Compute reference derivatives for dof 6.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients2[0][s] * aux[s];
-                }
-                break;
-            case 7:
-                // Compute reference derivatives for dof 7.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients3[0][s] * aux[s];
-                }
-                break;
-            case 8:
-                // Compute reference derivatives for dof 8.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients0[0][s] * aux[s];
-                }
-                break;
-            case 9:
-                // Compute reference derivatives for dof 9.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients1[0][s] * aux[s];
-                }
-                break;
-            case 10:
-                // Compute reference derivatives for dof 10.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients2[0][s] * aux[s];
-                }
-                break;
-            case 11:
-                // Compute reference derivatives for dof 11.
-                for (std::size_t r = 0; r < num_derivatives; ++r)
-                {
-                    double aux[4] = {};
-                    // Declare derivative matrix (of polynomial basis).
-                    double dmats[4][4] = {};
-                    // Initialize dmats.
-                    std::size_t comb = combinations[order - 1][r][0];
-                    std::copy_n(&dmats0[comb][0][0], 16, &dmats[0][0]);
-                    // Looping derivative order to generate dmats.
-                    for (std::size_t s = 1; s < order; ++s)
-                    {
-                        // Store previous dmats matrix.
-                        double dmats_old[4][4];
-                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                        // Resetting dmats.
-                        std::fill_n(&dmats[0][0], 16, 0.0);
-                        // Update dmats using an inner product.
-                        comb = combinations[order - 1][r][s];
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
-                    }
-                    for (std::size_t s = 0; s < 4; ++s)
-                        for (std::size_t t = 0; t < 4; ++t)
-                            aux[s] += dmats[s][t] * basisvalues1[t];
-                    derivatives[r] = 0.0;
-                    for (std::size_t s = 0; s < 4; ++s)
-                        derivatives[r] += coefficients3[0][s] * aux[s];
-                }
-                break;
-            }
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t c = 0; c < num_components[i]; ++c)
-                    reference_values[12 * (num_derivatives * 3) * ip + num_derivatives * 3 * i + 3 * r + (reference_offset[i] + c)] = derivatives[num_derivatives * c + r];
-        }
-    }
-  }
-
-  void transform_reference_basis_derivatives(double * values,
-                                             std::size_t order,
-                                             std::size_t num_points,
-                                             const double * reference_values,
-                                             const double * X,
-                                             const double * J,
-                                             const double * detJ,
-                                             const double * K,
-                                             int cell_orientation) const final override
-  {
-    const std::size_t num_derivatives = std::pow(3, order);
-    // Precomputed combinations
-    const std::size_t combinations[1][3][1] =
-        { { { 0 },
-            { 1 },
-            { 2 } } };
-    std::fill_n(values, num_points * 12 * num_derivatives * 3, 0.0);
-    const std::size_t reference_offsets[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
-    const std::size_t physical_offsets[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
-    for (std::size_t ip = 0; ip < num_points; ++ip)
-    {
-        double transform[3][3];
-        for (std::size_t r = 0; r < num_derivatives; ++r)
-            for (std::size_t s = 0; s < num_derivatives; ++s)
-                transform[r][s] = 1.0;
-        for (std::size_t r = 0; r < num_derivatives; ++r)
-            for (std::size_t s = 0; s < num_derivatives; ++s)
-                for (std::size_t k = 0; k < order; ++k)
-                    transform[r][s] *= K[3 * 3 * ip + 3 * combinations[order - 1][s][k] + combinations[order - 1][r][k]];
-        for (std::size_t d = 0; d < 12; ++d)
-        {
-            for (std::size_t s = 0; s < num_derivatives; ++s)
-            {
-                for (std::size_t i = 0; i < 1; ++i)
-                {
-                    // Using affine transform to map values back to the physical element.
-                    const double mapped_value = reference_values[12 * (num_derivatives * 3) * ip + num_derivatives * 3 * d + 3 * s + reference_offsets[d]];
-                    // Mapping derivatives back to the physical element
-                    for (std::size_t r = 0; r < num_derivatives; ++r)
-                        values[12 * (num_derivatives * 3) * ip + num_derivatives * 3 * d + 3 * r + (physical_offsets[d] + i)] += transform[r][s] * mapped_value;
-                }
-            }
-        }
-    }
-  }
-
-  void evaluate_basis(std::size_t i,
-                      double * values,
-                      const double * x,
-                      const double * coordinate_dofs,
-                      int cell_orientation,
-                      const ufc::coordinate_mapping * cm=nullptr
-                      ) const final override
-  {
-    double X[3] = {};
-    double J[9];
-    double detJ;
-    double K[9];
-    if (cm)
-    {
-        cm->compute_reference_geometry(X, J, &detJ, K, 1, x, coordinate_dofs, cell_orientation);
-    }
-    else
-    {
-        compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
-        compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
-        // Compute constants
-        const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
-        const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
-        const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
-        // Compute subdeterminants
-        const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
-        // Get coordinates and map to the reference (FIAT) element
-        double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
-        // Map to FFC reference coordinate
-        for (std::size_t k = 0; k < 3; ++k)
-            X[k] = (Y[k] + 1.0) / 2.0;
-    }
-    // Evaluate basis on reference element
-    double ref_values[36];
-    evaluate_reference_basis(ref_values, 1, X);
-    // Push forward
-    double physical_values[36];
-    transform_reference_basis_derivatives(physical_values, 0, 1, ref_values, X, J, &detJ, K, cell_orientation);
-    for (std::size_t k = 0; k < 3; ++k)
-        values[k] = physical_values[3 * i + k];
-  }
-
-  void evaluate_basis_all(double * values,
-                          const double * x,
-                          const double * coordinate_dofs,
-                          int cell_orientation,
-                          const ufc::coordinate_mapping * cm=nullptr
-                          ) const final override
-  {
-    // Helper variable to hold values of a single dof.
-    double dof_values[3] = {};
-    // Loop dofs and call evaluate_basis
-    for (std::size_t r = 0; r < 12; ++r)
-    {
-        evaluate_basis(r, dof_values, x, coordinate_dofs, cell_orientation);
-        for (std::size_t s = 0; s < 3; ++s)
-            values[r * 3 + s] = dof_values[s];
-    }
-  }
-
-  void evaluate_basis_derivatives(std::size_t i,
-                                  std::size_t n,
-                                  double * values,
-                                  const double * x,
-                                  const double * coordinate_dofs,
-                                  int cell_orientation,
-                                  const ufc::coordinate_mapping * cm=nullptr
-                                  ) const final override
-  {
-    std::size_t num_derivatives = std::pow(3, n);
-    std::fill_n(values, 3 * num_derivatives, 0.0);
-    // Call evaluate_basis_all if order of derivatives is equal to zero.
-    if (n == 0)
-    {
-        evaluate_basis(i, values, x, coordinate_dofs, cell_orientation);
-        return;
-    }
-    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
-    if (n > 1)
-        return;
-    // Compute Jacobian
-    double J[9];
-    compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
-    // Compute Inverse Jacobian and determinant
-    double K[9];
-    double detJ;
-    compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
-    // Compute constants
-    const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
-    const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
-    const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
-    // Compute subdeterminants
-    const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
-    // Get coordinates and map to the reference (FIAT) element
-    double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
-    // Precomputed combinations
-    const std::size_t combinations[1][3][1] =
-        { { { 0 },
-            { 1 },
-            { 2 } } };
-    // Declare transformation matrix
-    double transform[3][3] =
-        { { 1.0, 1.0, 1.0 },
-          { 1.0, 1.0, 1.0 },
-          { 1.0, 1.0, 1.0 } };
-    // Construct transformation matrix
-    for (std::size_t row = 0; row < num_derivatives; ++row)
-        for (std::size_t col = 0; col < num_derivatives; ++col)
-            for (std::size_t k = 0; k < n; ++k)
-                transform[row][col] *= K[3 * combinations[n - 1][col][k] + combinations[n - 1][row][k]];
-    switch (i)
-    {
-    case 0:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 1:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 2:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 3:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 4:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 5:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 6:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 7:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 8:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 9:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 10:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    case 11:
-        {
-            double basisvalues[4] = {};
-            basisvalues[0] = 1.0;
-            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
-            basisvalues[1] = tmp1_1;
-            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
-            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
-            basisvalues[0] *= std::sqrt(0.75);
-            basisvalues[3] *= std::sqrt(1.25);
-            basisvalues[2] *= std::sqrt(2.5);
-            basisvalues[1] *= std::sqrt(7.5);
-            // Table(s) of coefficients
-            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
-            // Tables of derivatives of the polynomial base (transpose).
-            static const double dmats0[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 6.324555320336758, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats1[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 5.477225575051663, 0.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 0.0 } };
-            static const double dmats2[4][4] =
-                { { 0.0, 0.0, 0.0, 0.0 },
-                  { 3.162277660168379, 0.0, 0.0, 0.0 },
-                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
-                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
-            // Compute reference derivatives.
-            // Declare array of derivatives on FIAT element.
-            double derivatives[3] = {};
-            // Declare derivative matrix (of polynomial basis).
-            double dmats[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Declare (auxiliary) derivative matrix (of polynomial basis).
-            double dmats_old[4][4] =
-                { { 1.0, 0.0, 0.0, 0.0 },
-                  { 0.0, 1.0, 0.0, 0.0 },
-                  { 0.0, 0.0, 1.0, 0.0 },
-                  { 0.0, 0.0, 0.0, 1.0 } };
-            // Loop possible derivatives.
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-            {
-                // Reset dmats to identity
-                std::fill_n(&dmats[0][0], 16, 0.0);
-                for (std::size_t t = 0; t < 4; ++t)
-                    dmats[t][t] = 1.0;
-                // Looping derivative order to generate dmats.
-                for (std::size_t s = 0; s < n; ++s)
-                {
-                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
-                    std::fill_n(&dmats[0][0], 16, 0.0);
-                    // Update dmats using an inner product.
-                    // _dmats_product(shape_dmats, comb[r][s], 0)
-                    if (combinations[n - 1][r][s] == 0)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 1)
-                    if (combinations[n - 1][r][s] == 1)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
-                    }
-                    // _dmats_product(shape_dmats, comb[r][s], 2)
-                    if (combinations[n - 1][r][s] == 2)
-                    {
-                        for (std::size_t t = 0; t < 4; ++t)
-                            for (std::size_t u = 0; u < 4; ++u)
-                                for (std::size_t tu = 0; tu < 4; ++tu)
-                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
-                    }
-                }
-                for (std::size_t s = 0; s < 4; ++s)
-                    for (std::size_t t = 0; t < 4; ++t)
-                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
-            }
-            // Transform derivatives back to physical element
-            for (std::size_t r = 0; r < num_derivatives; ++r)
-                for (std::size_t s = 0; s < num_derivatives; ++s)
-                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
-        }
-        break;
-    }
-  }
-
-  void evaluate_basis_derivatives_all(std::size_t n,
-                                      double * values,
-                                      const double * x,
-                                      const double * coordinate_dofs,
-                                      int cell_orientation,
-                                      const ufc::coordinate_mapping * cm=nullptr
-                                      ) const final override
-  {
-    // Call evaluate_basis_all if order of derivatives is equal to zero.
-    if (n == 0)
-    {
-        evaluate_basis_all(values, x, coordinate_dofs, cell_orientation);
-        return;
-    }
-    unsigned int num_derivatives = std::pow(3, n);
-    // Set values equal to zero.
-    std::fill_n(values, 3 * num_derivatives * 12, 0.0);
-    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
-    if (n > 1)
-        return;
-    // Helper variable to hold values of a single dof.
-    double dof_values[9] = {};
-    // Loop dofs and call evaluate_basis_derivatives.
-    for (std::size_t r = 0; r < 12; ++r)
-    {
-        evaluate_basis_derivatives(r, n, dof_values, x, coordinate_dofs, cell_orientation);
-        for (std::size_t s = 0; s < 3 * num_derivatives; ++s)
-            values[3 * num_derivatives * r + s] = dof_values[s];
-    }
-  }
-
-  double evaluate_dof(std::size_t i,
-                      const ufc::function& f,
-                      const double * coordinate_dofs,
-                      int cell_orientation,
-                      const ufc::cell& c,
-                      const ufc::coordinate_mapping * cm=nullptr
-                      ) const final override
-  {
-    // Declare variables for result of evaluation
-    double vals[3];
-    // Declare variable for physical coordinates
-    double y[3];
-    switch (i)
-    {
-    case 0:
-        {
-            y[0] = coordinate_dofs[0];
-            y[1] = coordinate_dofs[1];
-            y[2] = coordinate_dofs[2];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 1:
-        {
-            y[0] = coordinate_dofs[3];
-            y[1] = coordinate_dofs[4];
-            y[2] = coordinate_dofs[5];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 2:
-        {
-            y[0] = coordinate_dofs[6];
-            y[1] = coordinate_dofs[7];
-            y[2] = coordinate_dofs[8];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 3:
-        {
-            y[0] = coordinate_dofs[9];
-            y[1] = coordinate_dofs[10];
-            y[2] = coordinate_dofs[11];
-            f.evaluate(vals, y, c);
-            return vals[0];
-        }
-        break;
-    case 4:
-        {
-            y[0] = coordinate_dofs[0];
-            y[1] = coordinate_dofs[1];
-            y[2] = coordinate_dofs[2];
-            f.evaluate(vals, y, c);
-            return vals[1];
-        }
-        break;
-    case 5:
-        {
-            y[0] = coordinate_dofs[3];
-            y[1] = coordinate_dofs[4];
-            y[2] = coordinate_dofs[5];
-            f.evaluate(vals, y, c);
-            return vals[1];
-        }
-        break;
-    case 6:
-        {
-            y[0] = coordinate_dofs[6];
-            y[1] = coordinate_dofs[7];
-            y[2] = coordinate_dofs[8];
-            f.evaluate(vals, y, c);
-            return vals[1];
-        }
-        break;
-    case 7:
-        {
-            y[0] = coordinate_dofs[9];
-            y[1] = coordinate_dofs[10];
-            y[2] = coordinate_dofs[11];
-            f.evaluate(vals, y, c);
-            return vals[1];
-        }
-        break;
-    case 8:
-        {
-            y[0] = coordinate_dofs[0];
-            y[1] = coordinate_dofs[1];
-            y[2] = coordinate_dofs[2];
-            f.evaluate(vals, y, c);
-            return vals[2];
-        }
-        break;
-    case 9:
-        {
-            y[0] = coordinate_dofs[3];
-            y[1] = coordinate_dofs[4];
-            y[2] = coordinate_dofs[5];
-            f.evaluate(vals, y, c);
-            return vals[2];
-        }
-        break;
-    case 10:
-        {
-            y[0] = coordinate_dofs[6];
-            y[1] = coordinate_dofs[7];
-            y[2] = coordinate_dofs[8];
-            f.evaluate(vals, y, c);
-            return vals[2];
-        }
-        break;
-    case 11:
-        {
-            y[0] = coordinate_dofs[9];
-            y[1] = coordinate_dofs[10];
-            y[2] = coordinate_dofs[11];
-            f.evaluate(vals, y, c);
-            return vals[2];
-        }
-        break;
-    }
-    return 0.0;
-  }
-
-  void evaluate_dofs(double * values,
-                             const ufc::function& f,
-                             const double * coordinate_dofs,
-                             int cell_orientation,
-                             const ufc::cell& c,
-                             const ufc::coordinate_mapping * cm=nullptr
-                             ) const final override
-  {
-    // Declare variables for result of evaluation
-    double vals[3];
-    // Declare variable for physical coordinates
-    double y[3];
-    y[0] = coordinate_dofs[0];
-    y[1] = coordinate_dofs[1];
-    y[2] = coordinate_dofs[2];
-    f.evaluate(vals, y, c);
-    values[0] = vals[0];
-    y[0] = coordinate_dofs[3];
-    y[1] = coordinate_dofs[4];
-    y[2] = coordinate_dofs[5];
-    f.evaluate(vals, y, c);
-    values[1] = vals[0];
-    y[0] = coordinate_dofs[6];
-    y[1] = coordinate_dofs[7];
-    y[2] = coordinate_dofs[8];
-    f.evaluate(vals, y, c);
-    values[2] = vals[0];
-    y[0] = coordinate_dofs[9];
-    y[1] = coordinate_dofs[10];
-    y[2] = coordinate_dofs[11];
-    f.evaluate(vals, y, c);
-    values[3] = vals[0];
-    y[0] = coordinate_dofs[0];
-    y[1] = coordinate_dofs[1];
-    y[2] = coordinate_dofs[2];
-    f.evaluate(vals, y, c);
-    values[4] = vals[1];
-    y[0] = coordinate_dofs[3];
-    y[1] = coordinate_dofs[4];
-    y[2] = coordinate_dofs[5];
-    f.evaluate(vals, y, c);
-    values[5] = vals[1];
-    y[0] = coordinate_dofs[6];
-    y[1] = coordinate_dofs[7];
-    y[2] = coordinate_dofs[8];
-    f.evaluate(vals, y, c);
-    values[6] = vals[1];
-    y[0] = coordinate_dofs[9];
-    y[1] = coordinate_dofs[10];
-    y[2] = coordinate_dofs[11];
-    f.evaluate(vals, y, c);
-    values[7] = vals[1];
-    y[0] = coordinate_dofs[0];
-    y[1] = coordinate_dofs[1];
-    y[2] = coordinate_dofs[2];
-    f.evaluate(vals, y, c);
-    values[8] = vals[2];
-    y[0] = coordinate_dofs[3];
-    y[1] = coordinate_dofs[4];
-    y[2] = coordinate_dofs[5];
-    f.evaluate(vals, y, c);
-    values[9] = vals[2];
-    y[0] = coordinate_dofs[6];
-    y[1] = coordinate_dofs[7];
-    y[2] = coordinate_dofs[8];
-    f.evaluate(vals, y, c);
-    values[10] = vals[2];
-    y[0] = coordinate_dofs[9];
-    y[1] = coordinate_dofs[10];
-    y[2] = coordinate_dofs[11];
-    f.evaluate(vals, y, c);
-    values[11] = vals[2];
-  }
-
-  void interpolate_vertex_values(double * vertex_values,
-                                 const double * dof_values,
-                                 const double * coordinate_dofs,
-                                 int cell_orientation,
-                                 const ufc::coordinate_mapping * cm=nullptr
-                                 ) const final override
-  {
-    // Evaluate function and change variables
-    vertex_values[0] = dof_values[0];
-    vertex_values[3] = dof_values[1];
-    vertex_values[6] = dof_values[2];
-    vertex_values[9] = dof_values[3];
-    // Evaluate function and change variables
-    vertex_values[1] = dof_values[4];
-    vertex_values[4] = dof_values[5];
-    vertex_values[7] = dof_values[6];
-    vertex_values[10] = dof_values[7];
-    // Evaluate function and change variables
-    vertex_values[2] = dof_values[8];
-    vertex_values[5] = dof_values[9];
-    vertex_values[8] = dof_values[10];
-    vertex_values[11] = dof_values[11];
-  }
-
-  void tabulate_dof_coordinates(double * dof_coordinates,
-                                const double * coordinate_dofs,
-                                const ufc::coordinate_mapping * cm=nullptr
-                                ) const final override
-  {
-    dof_coordinates[0] = coordinate_dofs[0];
-    dof_coordinates[1] = coordinate_dofs[1];
-    dof_coordinates[2] = coordinate_dofs[2];
-    dof_coordinates[3] = coordinate_dofs[3];
-    dof_coordinates[3 + 1] = coordinate_dofs[4];
-    dof_coordinates[3 + 2] = coordinate_dofs[5];
-    dof_coordinates[3 * 2] = coordinate_dofs[6];
-    dof_coordinates[3 * 2 + 1] = coordinate_dofs[7];
-    dof_coordinates[3 * 2 + 2] = coordinate_dofs[8];
-    dof_coordinates[3 * 3] = coordinate_dofs[9];
-    dof_coordinates[3 * 3 + 1] = coordinate_dofs[10];
-    dof_coordinates[3 * 3 + 2] = coordinate_dofs[11];
-    dof_coordinates[3 * 4] = coordinate_dofs[0];
-    dof_coordinates[3 * 4 + 1] = coordinate_dofs[1];
-    dof_coordinates[3 * 4 + 2] = coordinate_dofs[2];
-    dof_coordinates[3 * 5] = coordinate_dofs[3];
-    dof_coordinates[3 * 5 + 1] = coordinate_dofs[4];
-    dof_coordinates[3 * 5 + 2] = coordinate_dofs[5];
-    dof_coordinates[3 * 6] = coordinate_dofs[6];
-    dof_coordinates[3 * 6 + 1] = coordinate_dofs[7];
-    dof_coordinates[3 * 6 + 2] = coordinate_dofs[8];
-    dof_coordinates[3 * 7] = coordinate_dofs[9];
-    dof_coordinates[3 * 7 + 1] = coordinate_dofs[10];
-    dof_coordinates[3 * 7 + 2] = coordinate_dofs[11];
-    dof_coordinates[3 * 8] = coordinate_dofs[0];
-    dof_coordinates[3 * 8 + 1] = coordinate_dofs[1];
-    dof_coordinates[3 * 8 + 2] = coordinate_dofs[2];
-    dof_coordinates[3 * 9] = coordinate_dofs[3];
-    dof_coordinates[3 * 9 + 1] = coordinate_dofs[4];
-    dof_coordinates[3 * 9 + 2] = coordinate_dofs[5];
-    dof_coordinates[3 * 10] = coordinate_dofs[6];
-    dof_coordinates[3 * 10 + 1] = coordinate_dofs[7];
-    dof_coordinates[3 * 10 + 2] = coordinate_dofs[8];
-    dof_coordinates[3 * 11] = coordinate_dofs[9];
-    dof_coordinates[3 * 11 + 1] = coordinate_dofs[10];
-    dof_coordinates[3 * 11 + 2] = coordinate_dofs[11];
-  }
-
-  void tabulate_reference_dof_coordinates(double * reference_dof_coordinates) const final override
-  {
-    static const double dof_X[36] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-    std::copy_n(dof_X, 36, reference_dof_coordinates);
-  }
-
-  std::size_t num_sub_elements() const final override
-  {
-    return 3;
-  }
-
-  ufc::finite_element * create_sub_element(std::size_t i) const final override
-  {
-    switch (i)
-    {
-    case 0:
         return new magnetic_finite_element_2();
     case 1:
         return new magnetic_finite_element_2();
@@ -12062,6 +12062,6944 @@ public:
   }
 
   ~magnetic_finite_element_4() override
+  {
+    // Do nothing
+  }
+
+  const char * signature() const final override
+  {
+    return "MixedElement(VectorElement(FiniteElement('Lagrange', tetrahedron, 2), dim=3), FiniteElement('Lagrange', tetrahedron, 1))";
+  }
+
+  ufc::shape cell_shape() const final override
+  {
+    return ufc::shape::tetrahedron;
+  }
+
+  std::size_t topological_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t geometric_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t space_dimension() const final override
+  {
+    return 34;
+  }
+
+  std::size_t value_rank() const final override
+  {
+    return 1;
+  }
+
+  std::size_t value_dimension(std::size_t i) const final override
+  {
+    static const int return_values[1] = { 4 };
+    if (i >= 1)
+        return 1;
+    return return_values[i];
+  }
+
+  std::size_t value_size() const final override
+  {
+    return 4;
+  }
+
+  std::size_t reference_value_rank() const final override
+  {
+    return 1;
+  }
+
+  std::size_t reference_value_dimension(std::size_t i) const final override
+  {
+    static const int return_values[1] = { 4 };
+    if (i >= 1)
+        return 1;
+    return return_values[i];
+  }
+
+  std::size_t reference_value_size() const final override
+  {
+    return 4;
+  }
+
+  std::size_t degree() const final override
+  {
+    return 2;
+  }
+
+  const char * family() const final override
+  {
+    return "Mixed";
+  }
+
+  void evaluate_reference_basis(double * reference_values,
+                                std::size_t num_points,
+                                const double * X) const final override
+  {
+    static const double coefficients0[1][10] = { { -0.057735026918962505, -0.06085806194501847, -0.03513641844631533, -0.024845199749997673, 0.06506000486323554, 0.050395263067896955, 0.04114755998989117, 0.02909571869813231, 0.023756554836659945, 0.016798421022632324 } };
+    static const double coefficients1[1][10] = { { -0.057735026918962505, 0.06085806194501845, -0.03513641844631533, -0.02484519974999766, 0.06506000486323554, -0.050395263067896955, -0.04114755998989118, 0.029095718698132312, 0.02375655483665994, 0.016798421022632324 } };
+    static const double coefficients2[1][10] = { { -0.05773502691896257, 0.0, 0.07027283689263066, -0.024845199749997684, 0.0, 0.0, 0.0, 0.08728715609439694, -0.04751310967331989, 0.01679842102263232 } };
+    static const double coefficients3[1][10] = { { -0.05773502691896263, 0.0, 0.0, 0.07453559924999296, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10079052613579394 } };
+    static const double coefficients4[1][10] = { { 0.23094010767585035, 0.0, 0.14054567378526128, 0.09938079899999067, 0.0, 0.0, 0.0, 0.0, 0.11878277418329972, -0.0671936840905293 } };
+    static const double coefficients5[1][10] = { { 0.23094010767585035, 0.1217161238900369, -0.07027283689263066, 0.09938079899999068, 0.0, 0.0, 0.10286889997472794, 0.0, -0.059391387091649865, -0.0671936840905293 } };
+    static const double coefficients6[1][10] = { { 0.23094010767585033, 0.1217161238900369, 0.07027283689263067, -0.09938079899999064, 0.0, 0.10079052613579391, -0.020573779994945578, -0.08728715609439695, -0.011878277418329978, 0.016798421022632327 } };
+    static const double coefficients7[1][10] = { { 0.23094010767585033, -0.12171612389003694, -0.07027283689263064, 0.09938079899999062, 0.0, 0.0, -0.10286889997472796, 0.0, -0.05939138709164986, -0.06719368409052928 } };
+    static const double coefficients8[1][10] = { { 0.23094010767585021, -0.12171612389003694, 0.07027283689263063, -0.09938079899999062, 0.0, -0.10079052613579394, 0.020573779994945585, -0.08728715609439693, -0.011878277418329973, 0.01679842102263232 } };
+    static const double coefficients9[1][10] = { { 0.2309401076758503, 0.0, -0.14054567378526128, -0.09938079899999064, -0.1301200097264711, 0.0, 0.0, 0.02909571869813232, 0.02375655483665996, 0.016798421022632324 } };
+    static const double coefficients30[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
+    static const double coefficients31[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
+    static const double coefficients32[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
+    static const double coefficients33[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
+    for (std::size_t k = 0; k < num_points * 34 * 4; ++k)
+        reference_values[k] = 0.0;
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        // Map from UFC reference coordinate X to FIAT reference coordinate Y
+        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
+        // Compute basisvalues for each relevant embedded degree
+        double basisvalues2[10] = {};
+        basisvalues2[0] = 1.0;
+        const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues2[1] = tmp1_2;
+        const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+        basisvalues2[4] = 1.5 * tmp1_2 * basisvalues2[1] - 0.5 * tmp2_2 * basisvalues2[0];
+        basisvalues2[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues2[0];
+        basisvalues2[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues2[1];
+        const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+        const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+        const double tmp5_2 = tmp4_2 * tmp4_2;
+        basisvalues2[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues2[2] - 0.5555555555555556 * tmp5_2 * basisvalues2[0];
+        basisvalues2[3] = (2.0 * Y[2] + 1.0) * basisvalues2[0];
+        basisvalues2[8] = (3.0 * Y[2] + 2.0) * basisvalues2[2];
+        basisvalues2[6] = (3.0 * Y[2] + 2.0) * basisvalues2[1];
+        basisvalues2[9] = (0.3125 + 1.875 * Y[2]) * basisvalues2[3] - 0.5625 * basisvalues2[0];
+        basisvalues2[0] *= std::sqrt(0.75);
+        basisvalues2[3] *= std::sqrt(1.25);
+        basisvalues2[9] *= std::sqrt(1.75);
+        basisvalues2[2] *= std::sqrt(2.5);
+        basisvalues2[8] *= std::sqrt(3.5);
+        basisvalues2[7] *= std::sqrt(5.25);
+        basisvalues2[1] *= std::sqrt(7.5);
+        basisvalues2[6] *= std::sqrt(10.5);
+        basisvalues2[5] *= std::sqrt(15.75);
+        basisvalues2[4] *= std::sqrt(26.25);
+        double basisvalues1[4] = {};
+        basisvalues1[0] = 1.0;
+        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues1[1] = tmp1_1;
+        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
+        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
+        basisvalues1[0] *= std::sqrt(0.75);
+        basisvalues1[3] *= std::sqrt(1.25);
+        basisvalues1[2] *= std::sqrt(2.5);
+        basisvalues1[1] *= std::sqrt(7.5);
+        // Accumulate products of coefficients and basisvalues
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip] += coefficients0[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4] += coefficients1[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 2] += coefficients2[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 3] += coefficients3[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 4] += coefficients4[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 5] += coefficients5[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 6] += coefficients6[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 7] += coefficients7[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 8] += coefficients8[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 9] += coefficients9[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 10 + 1] += coefficients0[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 11 + 1] += coefficients1[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 12 + 1] += coefficients2[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 13 + 1] += coefficients3[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 14 + 1] += coefficients4[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 15 + 1] += coefficients5[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 16 + 1] += coefficients6[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 17 + 1] += coefficients7[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 18 + 1] += coefficients8[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 19 + 1] += coefficients9[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 20 + 2] += coefficients0[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 21 + 2] += coefficients1[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 22 + 2] += coefficients2[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 23 + 2] += coefficients3[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 24 + 2] += coefficients4[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 25 + 2] += coefficients5[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 26 + 2] += coefficients6[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 27 + 2] += coefficients7[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 28 + 2] += coefficients8[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 10; ++r)
+            reference_values[34 * 4 * ip + 4 * 29 + 2] += coefficients9[0][r] * basisvalues2[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[34 * 4 * ip + 4 * 30 + 3] += coefficients30[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[34 * 4 * ip + 4 * 31 + 3] += coefficients31[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[34 * 4 * ip + 4 * 32 + 3] += coefficients32[0][r] * basisvalues1[r];
+        for (std::size_t r = 0; r < 4; ++r)
+            reference_values[34 * 4 * ip + 4 * 33 + 3] += coefficients33[0][r] * basisvalues1[r];
+    }
+  }
+
+  void evaluate_reference_basis_derivatives(double * reference_values,
+                                            std::size_t order,
+                                            std::size_t num_points,
+                                            const double * X) const final override
+  {
+    if (order == 0)
+    {
+        evaluate_reference_basis(reference_values, num_points, X);
+        return;
+    }
+    const std::size_t num_derivatives = std::pow(3, order);
+    std::fill_n(reference_values, num_points * 34 * num_derivatives * 4, 0.0);
+    if (order > 2)
+        return;
+    // Tables of derivatives of the polynomial base (transpose).
+    alignas(32) static const double dmats0[3][10][10] =
+        { { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+            { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } } };
+    alignas(32) static const double dmats30[3][4][4] =
+        { { { 0.0, 0.0, 0.0, 0.0 },
+            { 6.324555320336758, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0 },
+            { 3.162277660168379, 0.0, 0.0, 0.0 },
+            { 5.477225575051663, 0.0, 0.0, 0.0 },
+            { 0.0, 0.0, 0.0, 0.0 } },
+          { { 0.0, 0.0, 0.0, 0.0 },
+            { 3.162277660168379, 0.0, 0.0, 0.0 },
+            { 1.8257418583505542, 0.0, 0.0, 0.0 },
+            { 5.163977794943223, 0.0, 0.0, 0.0 } } };
+    static const double coefficients0[1][10] = { { -0.057735026918962505, -0.06085806194501847, -0.03513641844631533, -0.024845199749997673, 0.06506000486323554, 0.050395263067896955, 0.04114755998989117, 0.02909571869813231, 0.023756554836659945, 0.016798421022632324 } };
+    static const double coefficients1[1][10] = { { -0.057735026918962505, 0.06085806194501845, -0.03513641844631533, -0.02484519974999766, 0.06506000486323554, -0.050395263067896955, -0.04114755998989118, 0.029095718698132312, 0.02375655483665994, 0.016798421022632324 } };
+    static const double coefficients2[1][10] = { { -0.05773502691896257, 0.0, 0.07027283689263066, -0.024845199749997684, 0.0, 0.0, 0.0, 0.08728715609439694, -0.04751310967331989, 0.01679842102263232 } };
+    static const double coefficients3[1][10] = { { -0.05773502691896263, 0.0, 0.0, 0.07453559924999296, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10079052613579394 } };
+    static const double coefficients4[1][10] = { { 0.23094010767585035, 0.0, 0.14054567378526128, 0.09938079899999067, 0.0, 0.0, 0.0, 0.0, 0.11878277418329972, -0.0671936840905293 } };
+    static const double coefficients5[1][10] = { { 0.23094010767585035, 0.1217161238900369, -0.07027283689263066, 0.09938079899999068, 0.0, 0.0, 0.10286889997472794, 0.0, -0.059391387091649865, -0.0671936840905293 } };
+    static const double coefficients6[1][10] = { { 0.23094010767585033, 0.1217161238900369, 0.07027283689263067, -0.09938079899999064, 0.0, 0.10079052613579391, -0.020573779994945578, -0.08728715609439695, -0.011878277418329978, 0.016798421022632327 } };
+    static const double coefficients7[1][10] = { { 0.23094010767585033, -0.12171612389003694, -0.07027283689263064, 0.09938079899999062, 0.0, 0.0, -0.10286889997472796, 0.0, -0.05939138709164986, -0.06719368409052928 } };
+    static const double coefficients8[1][10] = { { 0.23094010767585021, -0.12171612389003694, 0.07027283689263063, -0.09938079899999062, 0.0, -0.10079052613579394, 0.020573779994945585, -0.08728715609439693, -0.011878277418329973, 0.01679842102263232 } };
+    static const double coefficients9[1][10] = { { 0.2309401076758503, 0.0, -0.14054567378526128, -0.09938079899999064, -0.1301200097264711, 0.0, 0.0, 0.02909571869813232, 0.02375655483665996, 0.016798421022632324 } };
+    static const double coefficients30[1][4] = { { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 } };
+    static const double coefficients31[1][4] = { { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 } };
+    static const double coefficients32[1][4] = { { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 } };
+    static const double coefficients33[1][4] = { { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 } };
+    const std::size_t reference_offset[34] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3 };
+    const std::size_t num_components[34] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    // Precomputed combinations
+    const std::size_t combinations[2][9][2] =
+        { { { 0, 0 },
+            { 1, 0 },
+            { 2, 0 },
+            { 0, 0 },
+            { 1, 0 },
+            { 2, 0 },
+            { 0, 0 },
+            { 1, 0 },
+            { 2, 0 } },
+          { { 0, 0 },
+            { 0, 1 },
+            { 0, 2 },
+            { 1, 0 },
+            { 1, 1 },
+            { 1, 2 },
+            { 2, 0 },
+            { 2, 1 },
+            { 2, 2 } } };
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        // Map from UFC reference coordinate X to FIAT reference coordinate Y
+        const double Y[3] = { 2.0 * X[ip * 3] - 1.0, 2.0 * X[ip * 3 + 1] - 1.0, 2.0 * X[ip * 3 + 2] - 1.0 };
+        // Compute basisvalues for each relevant embedded degree
+        double basisvalues2[10] = {};
+        basisvalues2[0] = 1.0;
+        const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues2[1] = tmp1_2;
+        const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+        basisvalues2[4] = 1.5 * tmp1_2 * basisvalues2[1] - 0.5 * tmp2_2 * basisvalues2[0];
+        basisvalues2[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues2[0];
+        basisvalues2[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues2[1];
+        const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+        const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+        const double tmp5_2 = tmp4_2 * tmp4_2;
+        basisvalues2[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues2[2] - 0.5555555555555556 * tmp5_2 * basisvalues2[0];
+        basisvalues2[3] = (2.0 * Y[2] + 1.0) * basisvalues2[0];
+        basisvalues2[8] = (3.0 * Y[2] + 2.0) * basisvalues2[2];
+        basisvalues2[6] = (3.0 * Y[2] + 2.0) * basisvalues2[1];
+        basisvalues2[9] = (0.3125 + 1.875 * Y[2]) * basisvalues2[3] - 0.5625 * basisvalues2[0];
+        basisvalues2[0] *= std::sqrt(0.75);
+        basisvalues2[3] *= std::sqrt(1.25);
+        basisvalues2[9] *= std::sqrt(1.75);
+        basisvalues2[2] *= std::sqrt(2.5);
+        basisvalues2[8] *= std::sqrt(3.5);
+        basisvalues2[7] *= std::sqrt(5.25);
+        basisvalues2[1] *= std::sqrt(7.5);
+        basisvalues2[6] *= std::sqrt(10.5);
+        basisvalues2[5] *= std::sqrt(15.75);
+        basisvalues2[4] *= std::sqrt(26.25);
+        double basisvalues1[4] = {};
+        basisvalues1[0] = 1.0;
+        const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+        basisvalues1[1] = tmp1_1;
+        basisvalues1[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues1[0];
+        basisvalues1[3] = (2.0 * Y[2] + 1.0) * basisvalues1[0];
+        basisvalues1[0] *= std::sqrt(0.75);
+        basisvalues1[3] *= std::sqrt(1.25);
+        basisvalues1[2] *= std::sqrt(2.5);
+        basisvalues1[1] *= std::sqrt(7.5);
+        // Loop over all dofs
+        for (std::size_t i = 0; i < 34; ++i)
+        {
+            double derivatives[9] = {};
+            switch (i)
+            {
+            case 0:
+                // Compute reference derivatives for dof 0.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 1:
+                // Compute reference derivatives for dof 1.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 2:
+                // Compute reference derivatives for dof 2.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 3:
+                // Compute reference derivatives for dof 3.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            case 4:
+                // Compute reference derivatives for dof 4.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients4[0][s] * aux[s];
+                }
+                break;
+            case 5:
+                // Compute reference derivatives for dof 5.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients5[0][s] * aux[s];
+                }
+                break;
+            case 6:
+                // Compute reference derivatives for dof 6.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients6[0][s] * aux[s];
+                }
+                break;
+            case 7:
+                // Compute reference derivatives for dof 7.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients7[0][s] * aux[s];
+                }
+                break;
+            case 8:
+                // Compute reference derivatives for dof 8.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients8[0][s] * aux[s];
+                }
+                break;
+            case 9:
+                // Compute reference derivatives for dof 9.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients9[0][s] * aux[s];
+                }
+                break;
+            case 10:
+                // Compute reference derivatives for dof 10.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 11:
+                // Compute reference derivatives for dof 11.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 12:
+                // Compute reference derivatives for dof 12.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 13:
+                // Compute reference derivatives for dof 13.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            case 14:
+                // Compute reference derivatives for dof 14.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients4[0][s] * aux[s];
+                }
+                break;
+            case 15:
+                // Compute reference derivatives for dof 15.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients5[0][s] * aux[s];
+                }
+                break;
+            case 16:
+                // Compute reference derivatives for dof 16.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients6[0][s] * aux[s];
+                }
+                break;
+            case 17:
+                // Compute reference derivatives for dof 17.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients7[0][s] * aux[s];
+                }
+                break;
+            case 18:
+                // Compute reference derivatives for dof 18.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients8[0][s] * aux[s];
+                }
+                break;
+            case 19:
+                // Compute reference derivatives for dof 19.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients9[0][s] * aux[s];
+                }
+                break;
+            case 20:
+                // Compute reference derivatives for dof 20.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients0[0][s] * aux[s];
+                }
+                break;
+            case 21:
+                // Compute reference derivatives for dof 21.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients1[0][s] * aux[s];
+                }
+                break;
+            case 22:
+                // Compute reference derivatives for dof 22.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients2[0][s] * aux[s];
+                }
+                break;
+            case 23:
+                // Compute reference derivatives for dof 23.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients3[0][s] * aux[s];
+                }
+                break;
+            case 24:
+                // Compute reference derivatives for dof 24.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients4[0][s] * aux[s];
+                }
+                break;
+            case 25:
+                // Compute reference derivatives for dof 25.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients5[0][s] * aux[s];
+                }
+                break;
+            case 26:
+                // Compute reference derivatives for dof 26.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients6[0][s] * aux[s];
+                }
+                break;
+            case 27:
+                // Compute reference derivatives for dof 27.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients7[0][s] * aux[s];
+                }
+                break;
+            case 28:
+                // Compute reference derivatives for dof 28.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients8[0][s] * aux[s];
+                }
+                break;
+            case 29:
+                // Compute reference derivatives for dof 29.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[10] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[10][10] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats0[comb][0][0], 100, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[10][10];
+                        std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 100, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats0[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 10; ++s)
+                        for (std::size_t t = 0; t < 10; ++t)
+                            aux[s] += dmats[s][t] * basisvalues2[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 10; ++s)
+                        derivatives[r] += coefficients9[0][s] * aux[s];
+                }
+                break;
+            case 30:
+                // Compute reference derivatives for dof 30.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats30[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats30[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients30[0][s] * aux[s];
+                }
+                break;
+            case 31:
+                // Compute reference derivatives for dof 31.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats30[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats30[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients31[0][s] * aux[s];
+                }
+                break;
+            case 32:
+                // Compute reference derivatives for dof 32.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats30[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats30[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients32[0][s] * aux[s];
+                }
+                break;
+            case 33:
+                // Compute reference derivatives for dof 33.
+                for (std::size_t r = 0; r < num_derivatives; ++r)
+                {
+                    double aux[4] = {};
+                    // Declare derivative matrix (of polynomial basis).
+                    double dmats[4][4] = {};
+                    // Initialize dmats.
+                    std::size_t comb = combinations[order - 1][r][0];
+                    std::copy_n(&dmats30[comb][0][0], 16, &dmats[0][0]);
+                    // Looping derivative order to generate dmats.
+                    for (std::size_t s = 1; s < order; ++s)
+                    {
+                        // Store previous dmats matrix.
+                        double dmats_old[4][4];
+                        std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                        // Resetting dmats.
+                        std::fill_n(&dmats[0][0], 16, 0.0);
+                        // Update dmats using an inner product.
+                        comb = combinations[order - 1][r][s];
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats30[comb][t][tu] * dmats_old[tu][u];
+                    }
+                    for (std::size_t s = 0; s < 4; ++s)
+                        for (std::size_t t = 0; t < 4; ++t)
+                            aux[s] += dmats[s][t] * basisvalues1[t];
+                    derivatives[r] = 0.0;
+                    for (std::size_t s = 0; s < 4; ++s)
+                        derivatives[r] += coefficients33[0][s] * aux[s];
+                }
+                break;
+            }
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t c = 0; c < num_components[i]; ++c)
+                    reference_values[34 * (num_derivatives * 4) * ip + num_derivatives * 4 * i + 4 * r + (reference_offset[i] + c)] = derivatives[num_derivatives * c + r];
+        }
+    }
+  }
+
+  void transform_reference_basis_derivatives(double * values,
+                                             std::size_t order,
+                                             std::size_t num_points,
+                                             const double * reference_values,
+                                             const double * X,
+                                             const double * J,
+                                             const double * detJ,
+                                             const double * K,
+                                             int cell_orientation) const final override
+  {
+    const std::size_t num_derivatives = std::pow(3, order);
+    // Precomputed combinations
+    const std::size_t combinations[2][9][2] =
+        { { { 0, 0 },
+            { 1, 0 },
+            { 2, 0 },
+            { 0, 0 },
+            { 1, 0 },
+            { 2, 0 },
+            { 0, 0 },
+            { 1, 0 },
+            { 2, 0 } },
+          { { 0, 0 },
+            { 0, 1 },
+            { 0, 2 },
+            { 1, 0 },
+            { 1, 1 },
+            { 1, 2 },
+            { 2, 0 },
+            { 2, 1 },
+            { 2, 2 } } };
+    std::fill_n(values, num_points * 34 * num_derivatives * 4, 0.0);
+    const std::size_t reference_offsets[34] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3 };
+    const std::size_t physical_offsets[34] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3 };
+    for (std::size_t ip = 0; ip < num_points; ++ip)
+    {
+        double transform[9][9];
+        for (std::size_t r = 0; r < num_derivatives; ++r)
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+                transform[r][s] = 1.0;
+        for (std::size_t r = 0; r < num_derivatives; ++r)
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+                for (std::size_t k = 0; k < order; ++k)
+                    transform[r][s] *= K[3 * 3 * ip + 3 * combinations[order - 1][s][k] + combinations[order - 1][r][k]];
+        for (std::size_t d = 0; d < 34; ++d)
+        {
+            for (std::size_t s = 0; s < num_derivatives; ++s)
+            {
+                for (std::size_t i = 0; i < 1; ++i)
+                {
+                    // Using affine transform to map values back to the physical element.
+                    const double mapped_value = reference_values[34 * (num_derivatives * 4) * ip + num_derivatives * 4 * d + 4 * s + reference_offsets[d]];
+                    // Mapping derivatives back to the physical element
+                    for (std::size_t r = 0; r < num_derivatives; ++r)
+                        values[34 * (num_derivatives * 4) * ip + num_derivatives * 4 * d + 4 * r + (physical_offsets[d] + i)] += transform[r][s] * mapped_value;
+                }
+            }
+        }
+    }
+  }
+
+  void evaluate_basis(std::size_t i,
+                      double * values,
+                      const double * x,
+                      const double * coordinate_dofs,
+                      int cell_orientation,
+                      const ufc::coordinate_mapping * cm=nullptr
+                      ) const final override
+  {
+    double X[3] = {};
+    double J[9];
+    double detJ;
+    double K[9];
+    if (cm)
+    {
+        cm->compute_reference_geometry(X, J, &detJ, K, 1, x, coordinate_dofs, cell_orientation);
+    }
+    else
+    {
+        compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
+        compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
+        // Compute constants
+        const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
+        const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
+        const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
+        // Compute subdeterminants
+        const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
+        // Get coordinates and map to the reference (FIAT) element
+        double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
+        // Map to FFC reference coordinate
+        for (std::size_t k = 0; k < 3; ++k)
+            X[k] = (Y[k] + 1.0) / 2.0;
+    }
+    // Evaluate basis on reference element
+    double ref_values[136];
+    evaluate_reference_basis(ref_values, 1, X);
+    // Push forward
+    double physical_values[136];
+    transform_reference_basis_derivatives(physical_values, 0, 1, ref_values, X, J, &detJ, K, cell_orientation);
+    for (std::size_t k = 0; k < 4; ++k)
+        values[k] = physical_values[4 * i + k];
+  }
+
+  void evaluate_basis_all(double * values,
+                          const double * x,
+                          const double * coordinate_dofs,
+                          int cell_orientation,
+                          const ufc::coordinate_mapping * cm=nullptr
+                          ) const final override
+  {
+    // Helper variable to hold values of a single dof.
+    double dof_values[4] = {};
+    // Loop dofs and call evaluate_basis
+    for (std::size_t r = 0; r < 34; ++r)
+    {
+        evaluate_basis(r, dof_values, x, coordinate_dofs, cell_orientation);
+        for (std::size_t s = 0; s < 4; ++s)
+            values[r * 4 + s] = dof_values[s];
+    }
+  }
+
+  void evaluate_basis_derivatives(std::size_t i,
+                                  std::size_t n,
+                                  double * values,
+                                  const double * x,
+                                  const double * coordinate_dofs,
+                                  int cell_orientation,
+                                  const ufc::coordinate_mapping * cm=nullptr
+                                  ) const final override
+  {
+    std::size_t num_derivatives = std::pow(3, n);
+    std::fill_n(values, 4 * num_derivatives, 0.0);
+    // Call evaluate_basis_all if order of derivatives is equal to zero.
+    if (n == 0)
+    {
+        evaluate_basis(i, values, x, coordinate_dofs, cell_orientation);
+        return;
+    }
+    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
+    if (n > 2)
+        return;
+    // Compute Jacobian
+    double J[9];
+    compute_jacobian_tetrahedron_3d(J, coordinate_dofs);
+    // Compute Inverse Jacobian and determinant
+    double K[9];
+    double detJ;
+    compute_jacobian_inverse_tetrahedron_3d(K, detJ, J);
+    // Compute constants
+    const double C0 = coordinate_dofs[9] + coordinate_dofs[6] + coordinate_dofs[3] - coordinate_dofs[0];
+    const double C1 = coordinate_dofs[10] + coordinate_dofs[7] + coordinate_dofs[4] - coordinate_dofs[1];
+    const double C2 = coordinate_dofs[11] + coordinate_dofs[8] + coordinate_dofs[5] - coordinate_dofs[2];
+    // Compute subdeterminants
+    const double d[9] = { J[4] * J[8] - J[5] * J[7], J[5] * J[6] - J[3] * J[8], J[3] * J[7] - J[4] * J[6], J[2] * J[7] - J[1] * J[8], J[0] * J[8] - J[2] * J[6], J[1] * J[6] - J[0] * J[7], J[1] * J[5] - J[2] * J[4], J[2] * J[3] - J[0] * J[5], J[0] * J[4] - J[1] * J[3] };
+    // Get coordinates and map to the reference (FIAT) element
+    double Y[3] = { (d[0] * (2.0 * x[0] - C0) + d[3] * (2.0 * x[1] - C1) + d[6] * (2.0 * x[2] - C2)) / detJ, (d[1] * (2.0 * x[0] - C0) + d[4] * (2.0 * x[1] - C1) + d[7] * (2.0 * x[2] - C2)) / detJ, (d[2] * (2.0 * x[0] - C0) + d[5] * (2.0 * x[1] - C1) + d[8] * (2.0 * x[2] - C2)) / detJ };
+    // Precomputed combinations
+    const std::size_t combinations[2][9][2] =
+        { { { 0, 0 },
+            { 1, 0 },
+            { 2, 0 },
+            { 0, 0 },
+            { 1, 0 },
+            { 2, 0 },
+            { 0, 0 },
+            { 1, 0 },
+            { 2, 0 } },
+          { { 0, 0 },
+            { 0, 1 },
+            { 0, 2 },
+            { 1, 0 },
+            { 1, 1 },
+            { 1, 2 },
+            { 2, 0 },
+            { 2, 1 },
+            { 2, 2 } } };
+    // Declare transformation matrix
+    double transform[9][9] =
+        { { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
+          { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 } };
+    // Construct transformation matrix
+    for (std::size_t row = 0; row < num_derivatives; ++row)
+        for (std::size_t col = 0; col < num_derivatives; ++col)
+            for (std::size_t k = 0; k < n; ++k)
+                transform[row][col] *= K[3 * combinations[n - 1][col][k] + combinations[n - 1][row][k]];
+    switch (i)
+    {
+    case 0:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.057735026918962505, -0.06085806194501847, -0.03513641844631533, -0.024845199749997673, 0.06506000486323554, 0.050395263067896955, 0.04114755998989117, 0.02909571869813231, 0.023756554836659945, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 1:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.057735026918962505, 0.06085806194501845, -0.03513641844631533, -0.02484519974999766, 0.06506000486323554, -0.050395263067896955, -0.04114755998989118, 0.029095718698132312, 0.02375655483665994, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 2:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.05773502691896257, 0.0, 0.07027283689263066, -0.024845199749997684, 0.0, 0.0, 0.0, 0.08728715609439694, -0.04751310967331989, 0.01679842102263232 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 3:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.05773502691896263, 0.0, 0.0, 0.07453559924999296, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10079052613579394 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 4:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585035, 0.0, 0.14054567378526128, 0.09938079899999067, 0.0, 0.0, 0.0, 0.0, 0.11878277418329972, -0.0671936840905293 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 5:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585035, 0.1217161238900369, -0.07027283689263066, 0.09938079899999068, 0.0, 0.0, 0.10286889997472794, 0.0, -0.059391387091649865, -0.0671936840905293 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 6:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585033, 0.1217161238900369, 0.07027283689263067, -0.09938079899999064, 0.0, 0.10079052613579391, -0.020573779994945578, -0.08728715609439695, -0.011878277418329978, 0.016798421022632327 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 7:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585033, -0.12171612389003694, -0.07027283689263064, 0.09938079899999062, 0.0, 0.0, -0.10286889997472796, 0.0, -0.05939138709164986, -0.06719368409052928 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 8:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585021, -0.12171612389003694, 0.07027283689263063, -0.09938079899999062, 0.0, -0.10079052613579394, 0.020573779994945585, -0.08728715609439693, -0.011878277418329973, 0.01679842102263232 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 9:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.2309401076758503, 0.0, -0.14054567378526128, -0.09938079899999064, -0.1301200097264711, 0.0, 0.0, 0.02909571869813232, 0.02375655483665996, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 10:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.057735026918962505, -0.06085806194501847, -0.03513641844631533, -0.024845199749997673, 0.06506000486323554, 0.050395263067896955, 0.04114755998989117, 0.02909571869813231, 0.023756554836659945, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 11:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.057735026918962505, 0.06085806194501845, -0.03513641844631533, -0.02484519974999766, 0.06506000486323554, -0.050395263067896955, -0.04114755998989118, 0.029095718698132312, 0.02375655483665994, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 12:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.05773502691896257, 0.0, 0.07027283689263066, -0.024845199749997684, 0.0, 0.0, 0.0, 0.08728715609439694, -0.04751310967331989, 0.01679842102263232 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 13:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.05773502691896263, 0.0, 0.0, 0.07453559924999296, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10079052613579394 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 14:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585035, 0.0, 0.14054567378526128, 0.09938079899999067, 0.0, 0.0, 0.0, 0.0, 0.11878277418329972, -0.0671936840905293 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 15:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585035, 0.1217161238900369, -0.07027283689263066, 0.09938079899999068, 0.0, 0.0, 0.10286889997472794, 0.0, -0.059391387091649865, -0.0671936840905293 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 16:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585033, 0.1217161238900369, 0.07027283689263067, -0.09938079899999064, 0.0, 0.10079052613579391, -0.020573779994945578, -0.08728715609439695, -0.011878277418329978, 0.016798421022632327 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 17:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585033, -0.12171612389003694, -0.07027283689263064, 0.09938079899999062, 0.0, 0.0, -0.10286889997472796, 0.0, -0.05939138709164986, -0.06719368409052928 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 18:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585021, -0.12171612389003694, 0.07027283689263063, -0.09938079899999062, 0.0, -0.10079052613579394, 0.020573779994945585, -0.08728715609439693, -0.011878277418329973, 0.01679842102263232 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 19:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.2309401076758503, 0.0, -0.14054567378526128, -0.09938079899999064, -0.1301200097264711, 0.0, 0.0, 0.02909571869813232, 0.02375655483665996, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 20:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.057735026918962505, -0.06085806194501847, -0.03513641844631533, -0.024845199749997673, 0.06506000486323554, 0.050395263067896955, 0.04114755998989117, 0.02909571869813231, 0.023756554836659945, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 21:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.057735026918962505, 0.06085806194501845, -0.03513641844631533, -0.02484519974999766, 0.06506000486323554, -0.050395263067896955, -0.04114755998989118, 0.029095718698132312, 0.02375655483665994, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 22:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.05773502691896257, 0.0, 0.07027283689263066, -0.024845199749997684, 0.0, 0.0, 0.0, 0.08728715609439694, -0.04751310967331989, 0.01679842102263232 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 23:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { -0.05773502691896263, 0.0, 0.0, 0.07453559924999296, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10079052613579394 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 24:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585035, 0.0, 0.14054567378526128, 0.09938079899999067, 0.0, 0.0, 0.0, 0.0, 0.11878277418329972, -0.0671936840905293 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 25:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585035, 0.1217161238900369, -0.07027283689263066, 0.09938079899999068, 0.0, 0.0, 0.10286889997472794, 0.0, -0.059391387091649865, -0.0671936840905293 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 26:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585033, 0.1217161238900369, 0.07027283689263067, -0.09938079899999064, 0.0, 0.10079052613579391, -0.020573779994945578, -0.08728715609439695, -0.011878277418329978, 0.016798421022632327 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 27:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585033, -0.12171612389003694, -0.07027283689263064, 0.09938079899999062, 0.0, 0.0, -0.10286889997472796, 0.0, -0.05939138709164986, -0.06719368409052928 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 28:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.23094010767585021, -0.12171612389003694, 0.07027283689263063, -0.09938079899999062, 0.0, -0.10079052613579394, 0.020573779994945585, -0.08728715609439693, -0.011878277418329973, 0.01679842102263232 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 29:
+        {
+            double basisvalues[10] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_2 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_2;
+            const double tmp2_2 = 0.25 * (Y[1] + Y[2]) * (Y[1] + Y[2]);
+            basisvalues[4] = 1.5 * tmp1_2 * basisvalues[1] - 0.5 * tmp2_2 * basisvalues[0];
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[5] = (0.5 * (2.0 + 3.0 * Y[1] + Y[2]) + (1.0 + Y[1])) * basisvalues[1];
+            const double tmp3_2 = 0.5 * (1.0 + 2.0 * Y[1] + Y[2]);
+            const double tmp4_2 = 0.5 * (1.0 - Y[2]);
+            const double tmp5_2 = tmp4_2 * tmp4_2;
+            basisvalues[7] = (1.6666666666666667 * tmp3_2 + 0.1111111111111111 * tmp4_2) * basisvalues[2] - 0.5555555555555556 * tmp5_2 * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[8] = (3.0 * Y[2] + 2.0) * basisvalues[2];
+            basisvalues[6] = (3.0 * Y[2] + 2.0) * basisvalues[1];
+            basisvalues[9] = (0.3125 + 1.875 * Y[2]) * basisvalues[3] - 0.5625 * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[9] *= std::sqrt(1.75);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[8] *= std::sqrt(3.5);
+            basisvalues[7] *= std::sqrt(5.25);
+            basisvalues[1] *= std::sqrt(7.5);
+            basisvalues[6] *= std::sqrt(10.5);
+            basisvalues[5] *= std::sqrt(15.75);
+            basisvalues[4] *= std::sqrt(26.25);
+            // Table(s) of coefficients
+            static const double coefficients0[10] = { 0.2309401076758503, 0.0, -0.14054567378526128, -0.09938079899999064, -0.1301200097264711, 0.0, 0.0, 0.02909571869813232, 0.02375655483665996, 0.016798421022632324 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336757, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 11.224972160321823, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 4.582575694955856, 0.0, 8.366600265340765, -1.1832159566199276, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.7416573867739507, 0.0, 0.0, 8.69482604771367, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.477225575051664, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477961, 7.245688373094725, 4.1833001326703805, -0.5916079783099693, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933869753, 0.0, 0.0, 4.347413023856835, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -2.645751311064623, 0.0, 9.660917830792958, 0.6831300510639815, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.24037034920394, 0.0, 0.0, 7.5299402388066845, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[10][10] =
+                { { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 3.1622776601683786, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.825741858350554, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 5.1639777949432215, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.9580398915498094, 5.612486080160912, -1.0801234497346426, -0.7637626158259725, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 2.291287847477917, 1.4491376746189433, 4.183300132670375, -0.591607978309961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.8708286933870113, 7.0992957397195475, 0.0, 4.347413023856837, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.3228756555323073, 0.0, 3.8643671323171906, -0.34156502553198986, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 1.0801234497346333, 0.0, 7.099295739719544, 2.5099800796022134, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { -3.81881307912991, 0.0, 0.0, 8.874119674649432, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[10][10] =
+                { { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 100, 0.0);
+                for (std::size_t t = 0; t < 10; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 100, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 100, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 10; ++t)
+                            for (std::size_t u = 0; u < 10; ++u)
+                                for (std::size_t tu = 0; tu < 10; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 10; ++s)
+                    for (std::size_t t = 0; t < 10; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[2 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 30:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.288675134594813, -0.18257418583505536, -0.10540925533894598, -0.07453559924999298 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[3 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 31:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.28867513459481287, 0.18257418583505536, -0.10540925533894596, -0.07453559924999296 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[3 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 32:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.21081851067789195, -0.07453559924999299 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[3 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    case 33:
+        {
+            double basisvalues[4] = {};
+            basisvalues[0] = 1.0;
+            const double tmp1_1 = 0.5 * (2.0 + 2.0 * Y[0] + Y[1] + Y[2]);
+            basisvalues[1] = tmp1_1;
+            basisvalues[2] = 0.5 * (2.0 + 3.0 * Y[1] + Y[2]) * basisvalues[0];
+            basisvalues[3] = (2.0 * Y[2] + 1.0) * basisvalues[0];
+            basisvalues[0] *= std::sqrt(0.75);
+            basisvalues[3] *= std::sqrt(1.25);
+            basisvalues[2] *= std::sqrt(2.5);
+            basisvalues[1] *= std::sqrt(7.5);
+            // Table(s) of coefficients
+            static const double coefficients0[4] = { 0.2886751345948129, 0.0, 0.0, 0.22360679774997896 };
+            // Tables of derivatives of the polynomial base (transpose).
+            static const double dmats0[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 6.324555320336758, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats1[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 5.477225575051663, 0.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 0.0 } };
+            static const double dmats2[4][4] =
+                { { 0.0, 0.0, 0.0, 0.0 },
+                  { 3.162277660168379, 0.0, 0.0, 0.0 },
+                  { 1.8257418583505542, 0.0, 0.0, 0.0 },
+                  { 5.163977794943223, 0.0, 0.0, 0.0 } };
+            // Compute reference derivatives.
+            // Declare array of derivatives on FIAT element.
+            double derivatives[9] = {};
+            // Declare derivative matrix (of polynomial basis).
+            double dmats[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Declare (auxiliary) derivative matrix (of polynomial basis).
+            double dmats_old[4][4] =
+                { { 1.0, 0.0, 0.0, 0.0 },
+                  { 0.0, 1.0, 0.0, 0.0 },
+                  { 0.0, 0.0, 1.0, 0.0 },
+                  { 0.0, 0.0, 0.0, 1.0 } };
+            // Loop possible derivatives.
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+            {
+                // Reset dmats to identity
+                std::fill_n(&dmats[0][0], 16, 0.0);
+                for (std::size_t t = 0; t < 4; ++t)
+                    dmats[t][t] = 1.0;
+                // Looping derivative order to generate dmats.
+                for (std::size_t s = 0; s < n; ++s)
+                {
+                    std::copy_n(&dmats[0][0], 16, &dmats_old[0][0]);
+                    std::fill_n(&dmats[0][0], 16, 0.0);
+                    // Update dmats using an inner product.
+                    // _dmats_product(shape_dmats, comb[r][s], 0)
+                    if (combinations[n - 1][r][s] == 0)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats0[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 1)
+                    if (combinations[n - 1][r][s] == 1)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats1[t][tu];
+                    }
+                    // _dmats_product(shape_dmats, comb[r][s], 2)
+                    if (combinations[n - 1][r][s] == 2)
+                    {
+                        for (std::size_t t = 0; t < 4; ++t)
+                            for (std::size_t u = 0; u < 4; ++u)
+                                for (std::size_t tu = 0; tu < 4; ++tu)
+                                    dmats[t][u] += dmats_old[tu][u] * dmats2[t][tu];
+                    }
+                }
+                for (std::size_t s = 0; s < 4; ++s)
+                    for (std::size_t t = 0; t < 4; ++t)
+                        derivatives[r] += coefficients0[s] * dmats[s][t] * basisvalues[t];
+            }
+            // Transform derivatives back to physical element
+            for (std::size_t r = 0; r < num_derivatives; ++r)
+                for (std::size_t s = 0; s < num_derivatives; ++s)
+                    values[3 * num_derivatives + r] += transform[r][s] * derivatives[s];
+        }
+        break;
+    }
+  }
+
+  void evaluate_basis_derivatives_all(std::size_t n,
+                                      double * values,
+                                      const double * x,
+                                      const double * coordinate_dofs,
+                                      int cell_orientation,
+                                      const ufc::coordinate_mapping * cm=nullptr
+                                      ) const final override
+  {
+    // Call evaluate_basis_all if order of derivatives is equal to zero.
+    if (n == 0)
+    {
+        evaluate_basis_all(values, x, coordinate_dofs, cell_orientation);
+        return;
+    }
+    unsigned int num_derivatives = std::pow(3, n);
+    // Set values equal to zero.
+    std::fill_n(values, 4 * num_derivatives * 34, 0.0);
+    // If order of derivatives is greater than the maximum polynomial degree, return zeros.
+    if (n > 2)
+        return;
+    // Helper variable to hold values of a single dof.
+    double dof_values[36] = {};
+    // Loop dofs and call evaluate_basis_derivatives.
+    for (std::size_t r = 0; r < 34; ++r)
+    {
+        evaluate_basis_derivatives(r, n, dof_values, x, coordinate_dofs, cell_orientation);
+        for (std::size_t s = 0; s < 4 * num_derivatives; ++s)
+            values[4 * num_derivatives * r + s] = dof_values[s];
+    }
+  }
+
+  double evaluate_dof(std::size_t i,
+                      const ufc::function& f,
+                      const double * coordinate_dofs,
+                      int cell_orientation,
+                      const ufc::cell& c,
+                      const ufc::coordinate_mapping * cm=nullptr
+                      ) const final override
+  {
+    // Declare variables for result of evaluation
+    double vals[4];
+    // Declare variable for physical coordinates
+    double y[3];
+    switch (i)
+    {
+    case 0:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 1:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 2:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 3:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 4:
+        {
+            y[0] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 5:
+        {
+            y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 6:
+        {
+            y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+            y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+            y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 7:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 8:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 9:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[0];
+        }
+        break;
+    case 10:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 11:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 12:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 13:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 14:
+        {
+            y[0] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 15:
+        {
+            y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 16:
+        {
+            y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+            y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+            y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 17:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 18:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 19:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[1];
+        }
+        break;
+    case 20:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 21:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 22:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 23:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 24:
+        {
+            y[0] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 25:
+        {
+            y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 26:
+        {
+            y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+            y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+            y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 27:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 28:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 29:
+        {
+            y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+            y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+            y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[2];
+        }
+        break;
+    case 30:
+        {
+            y[0] = coordinate_dofs[0];
+            y[1] = coordinate_dofs[1];
+            y[2] = coordinate_dofs[2];
+            f.evaluate(vals, y, c);
+            return vals[3];
+        }
+        break;
+    case 31:
+        {
+            y[0] = coordinate_dofs[3];
+            y[1] = coordinate_dofs[4];
+            y[2] = coordinate_dofs[5];
+            f.evaluate(vals, y, c);
+            return vals[3];
+        }
+        break;
+    case 32:
+        {
+            y[0] = coordinate_dofs[6];
+            y[1] = coordinate_dofs[7];
+            y[2] = coordinate_dofs[8];
+            f.evaluate(vals, y, c);
+            return vals[3];
+        }
+        break;
+    case 33:
+        {
+            y[0] = coordinate_dofs[9];
+            y[1] = coordinate_dofs[10];
+            y[2] = coordinate_dofs[11];
+            f.evaluate(vals, y, c);
+            return vals[3];
+        }
+        break;
+    }
+    return 0.0;
+  }
+
+  void evaluate_dofs(double * values,
+                             const ufc::function& f,
+                             const double * coordinate_dofs,
+                             int cell_orientation,
+                             const ufc::cell& c,
+                             const ufc::coordinate_mapping * cm=nullptr
+                             ) const final override
+  {
+    // Declare variables for result of evaluation
+    double vals[4];
+    // Declare variable for physical coordinates
+    double y[3];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[0] = vals[0];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[1] = vals[0];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[2] = vals[0];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[3] = vals[0];
+    y[0] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[4] = vals[0];
+    y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[5] = vals[0];
+    y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+    y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+    y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[6] = vals[0];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[7] = vals[0];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[8] = vals[0];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[9] = vals[0];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[10] = vals[1];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[11] = vals[1];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[12] = vals[1];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[13] = vals[1];
+    y[0] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[14] = vals[1];
+    y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[15] = vals[1];
+    y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+    y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+    y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[16] = vals[1];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[17] = vals[1];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[18] = vals[1];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[19] = vals[1];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[20] = vals[2];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[21] = vals[2];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[22] = vals[2];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[23] = vals[2];
+    y[0] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[24] = vals[2];
+    y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[25] = vals[2];
+    y[0] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+    y[1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+    y[2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[26] = vals[2];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[27] = vals[2];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[28] = vals[2];
+    y[0] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+    y[1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+    y[2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[29] = vals[2];
+    y[0] = coordinate_dofs[0];
+    y[1] = coordinate_dofs[1];
+    y[2] = coordinate_dofs[2];
+    f.evaluate(vals, y, c);
+    values[30] = vals[3];
+    y[0] = coordinate_dofs[3];
+    y[1] = coordinate_dofs[4];
+    y[2] = coordinate_dofs[5];
+    f.evaluate(vals, y, c);
+    values[31] = vals[3];
+    y[0] = coordinate_dofs[6];
+    y[1] = coordinate_dofs[7];
+    y[2] = coordinate_dofs[8];
+    f.evaluate(vals, y, c);
+    values[32] = vals[3];
+    y[0] = coordinate_dofs[9];
+    y[1] = coordinate_dofs[10];
+    y[2] = coordinate_dofs[11];
+    f.evaluate(vals, y, c);
+    values[33] = vals[3];
+  }
+
+  void interpolate_vertex_values(double * vertex_values,
+                                 const double * dof_values,
+                                 const double * coordinate_dofs,
+                                 int cell_orientation,
+                                 const ufc::coordinate_mapping * cm=nullptr
+                                 ) const final override
+  {
+    // Evaluate function and change variables
+    vertex_values[0] = dof_values[0];
+    vertex_values[4] = dof_values[1];
+    vertex_values[8] = dof_values[2];
+    vertex_values[12] = dof_values[3];
+    // Evaluate function and change variables
+    vertex_values[1] = dof_values[10];
+    vertex_values[5] = dof_values[11];
+    vertex_values[9] = dof_values[12];
+    vertex_values[13] = dof_values[13];
+    // Evaluate function and change variables
+    vertex_values[2] = dof_values[20];
+    vertex_values[6] = dof_values[21];
+    vertex_values[10] = dof_values[22];
+    vertex_values[14] = dof_values[23];
+    // Evaluate function and change variables
+    vertex_values[3] = dof_values[30];
+    vertex_values[7] = dof_values[31];
+    vertex_values[11] = dof_values[32];
+    vertex_values[15] = dof_values[33];
+  }
+
+  void tabulate_dof_coordinates(double * dof_coordinates,
+                                const double * coordinate_dofs,
+                                const ufc::coordinate_mapping * cm=nullptr
+                                ) const final override
+  {
+    dof_coordinates[0] = coordinate_dofs[0];
+    dof_coordinates[1] = coordinate_dofs[1];
+    dof_coordinates[2] = coordinate_dofs[2];
+    dof_coordinates[3] = coordinate_dofs[3];
+    dof_coordinates[3 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 2] = coordinate_dofs[6];
+    dof_coordinates[3 * 2 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 2 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 3] = coordinate_dofs[9];
+    dof_coordinates[3 * 3 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 3 + 2] = coordinate_dofs[11];
+    dof_coordinates[3 * 4] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 4 + 1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 4 + 2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 5] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 5 + 1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 5 + 2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 6] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+    dof_coordinates[3 * 6 + 1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+    dof_coordinates[3 * 6 + 2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+    dof_coordinates[3 * 7] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 7 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 7 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 8] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+    dof_coordinates[3 * 8 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+    dof_coordinates[3 * 8 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+    dof_coordinates[3 * 9] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+    dof_coordinates[3 * 9 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+    dof_coordinates[3 * 9 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+    dof_coordinates[3 * 10] = coordinate_dofs[0];
+    dof_coordinates[3 * 10 + 1] = coordinate_dofs[1];
+    dof_coordinates[3 * 10 + 2] = coordinate_dofs[2];
+    dof_coordinates[3 * 11] = coordinate_dofs[3];
+    dof_coordinates[3 * 11 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 * 11 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 12] = coordinate_dofs[6];
+    dof_coordinates[3 * 12 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 12 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 13] = coordinate_dofs[9];
+    dof_coordinates[3 * 13 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 13 + 2] = coordinate_dofs[11];
+    dof_coordinates[3 * 14] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 14 + 1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 14 + 2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 15] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 15 + 1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 15 + 2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 16] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+    dof_coordinates[3 * 16 + 1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+    dof_coordinates[3 * 16 + 2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+    dof_coordinates[3 * 17] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 17 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 17 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 18] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+    dof_coordinates[3 * 18 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+    dof_coordinates[3 * 18 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+    dof_coordinates[3 * 19] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+    dof_coordinates[3 * 19 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+    dof_coordinates[3 * 19 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+    dof_coordinates[3 * 20] = coordinate_dofs[0];
+    dof_coordinates[3 * 20 + 1] = coordinate_dofs[1];
+    dof_coordinates[3 * 20 + 2] = coordinate_dofs[2];
+    dof_coordinates[3 * 21] = coordinate_dofs[3];
+    dof_coordinates[3 * 21 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 * 21 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 22] = coordinate_dofs[6];
+    dof_coordinates[3 * 22 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 22 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 23] = coordinate_dofs[9];
+    dof_coordinates[3 * 23 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 23 + 2] = coordinate_dofs[11];
+    dof_coordinates[3 * 24] = 0.5 * coordinate_dofs[6] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 24 + 1] = 0.5 * coordinate_dofs[7] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 24 + 2] = 0.5 * coordinate_dofs[8] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 25] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 25 + 1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 25 + 2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 26] = 0.5 * coordinate_dofs[3] + 0.5 * coordinate_dofs[6];
+    dof_coordinates[3 * 26 + 1] = 0.5 * coordinate_dofs[4] + 0.5 * coordinate_dofs[7];
+    dof_coordinates[3 * 26 + 2] = 0.5 * coordinate_dofs[5] + 0.5 * coordinate_dofs[8];
+    dof_coordinates[3 * 27] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[9];
+    dof_coordinates[3 * 27 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[10];
+    dof_coordinates[3 * 27 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[11];
+    dof_coordinates[3 * 28] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[6];
+    dof_coordinates[3 * 28 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[7];
+    dof_coordinates[3 * 28 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[8];
+    dof_coordinates[3 * 29] = 0.5 * coordinate_dofs[0] + 0.5 * coordinate_dofs[3];
+    dof_coordinates[3 * 29 + 1] = 0.5 * coordinate_dofs[1] + 0.5 * coordinate_dofs[4];
+    dof_coordinates[3 * 29 + 2] = 0.5 * coordinate_dofs[2] + 0.5 * coordinate_dofs[5];
+    dof_coordinates[3 * 30] = coordinate_dofs[0];
+    dof_coordinates[3 * 30 + 1] = coordinate_dofs[1];
+    dof_coordinates[3 * 30 + 2] = coordinate_dofs[2];
+    dof_coordinates[3 * 31] = coordinate_dofs[3];
+    dof_coordinates[3 * 31 + 1] = coordinate_dofs[4];
+    dof_coordinates[3 * 31 + 2] = coordinate_dofs[5];
+    dof_coordinates[3 * 32] = coordinate_dofs[6];
+    dof_coordinates[3 * 32 + 1] = coordinate_dofs[7];
+    dof_coordinates[3 * 32 + 2] = coordinate_dofs[8];
+    dof_coordinates[3 * 33] = coordinate_dofs[9];
+    dof_coordinates[3 * 33 + 1] = coordinate_dofs[10];
+    dof_coordinates[3 * 33 + 2] = coordinate_dofs[11];
+  }
+
+  void tabulate_reference_dof_coordinates(double * reference_dof_coordinates) const final override
+  {
+    static const double dof_X[102] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
+    std::copy_n(dof_X, 102, reference_dof_coordinates);
+  }
+
+  std::size_t num_sub_elements() const final override
+  {
+    return 2;
+  }
+
+  ufc::finite_element * create_sub_element(std::size_t i) const final override
+  {
+    switch (i)
+    {
+    case 0:
+        return new magnetic_finite_element_3();
+    case 1:
+        return new magnetic_finite_element_0();
+    default:
+        return nullptr;
+    }
+  }
+
+  ufc::finite_element * create() const final override
+  {
+    return new magnetic_finite_element_4();
+  }
+
+};
+
+
+class magnetic_finite_element_5: public ufc::finite_element
+{
+public:
+
+  magnetic_finite_element_5() : ufc::finite_element()
+  {
+    // Do nothing
+  }
+
+  ~magnetic_finite_element_5() override
   {
     // Do nothing
   }
@@ -12361,7 +19299,7 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_4();
+    return new magnetic_finite_element_5();
   }
 
 };
@@ -12377,6 +19315,616 @@ public:
   }
 
   ~magnetic_dofmap_0() override
+  {
+    // Do nothing
+  }
+
+  const char * signature() const final override
+  {
+    return "FFC dofmap for FiniteElement('Lagrange', tetrahedron, 1)";
+  }
+
+  bool needs_mesh_entities(std::size_t d) const final override
+  {
+    static const bool return_values[4] = { true, false, false, false };
+    if (d >= 4)
+        return false;
+    return return_values[d];
+  }
+
+  std::size_t topological_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t global_dimension(const std::vector<std::size_t>&
+                               num_global_entities) const final override
+  {
+    return num_global_entities[0];
+  }
+
+  std::size_t num_global_support_dofs() const final override
+  {
+    return 0;
+  }
+
+  std::size_t num_element_support_dofs() const final override
+  {
+    return 4;
+  }
+
+  std::size_t num_element_dofs() const final override
+  {
+    return 4;
+  }
+
+  std::size_t num_facet_dofs() const final override
+  {
+    return 3;
+  }
+
+  std::size_t num_entity_dofs(std::size_t d) const final override
+  {
+    static const std::size_t return_values[4] = { 1, 0, 0, 0 };
+    if (d >= 4)
+        return 0;
+    return return_values[d];
+  }
+
+  std::size_t num_entity_closure_dofs(std::size_t d) const final override
+  {
+    static const std::size_t return_values[4] = { 1, 2, 3, 4 };
+    if (d >= 4)
+        return 0;
+    return return_values[d];
+  }
+
+  void tabulate_dofs(std::size_t * dofs,
+                     const std::vector<std::size_t>& num_global_entities,
+                     const std::vector<std::vector<std::size_t>>& entity_indices) const final override
+  {
+    dofs[0] = entity_indices[0][0];
+    dofs[1] = entity_indices[0][1];
+    dofs[2] = entity_indices[0][2];
+    dofs[3] = entity_indices[0][3];
+  }
+
+  void tabulate_facet_dofs(std::size_t * dofs,
+                           std::size_t facet) const final override
+  {
+    switch (facet)
+    {
+    case 0:
+        dofs[0] = 1;
+        dofs[1] = 2;
+        dofs[2] = 3;
+        break;
+    case 1:
+        dofs[0] = 0;
+        dofs[1] = 2;
+        dofs[2] = 3;
+        break;
+    case 2:
+        dofs[0] = 0;
+        dofs[1] = 1;
+        dofs[2] = 3;
+        break;
+    case 3:
+        dofs[0] = 0;
+        dofs[1] = 1;
+        dofs[2] = 2;
+        break;
+    }
+  }
+
+  void tabulate_entity_dofs(std::size_t * dofs,
+                            std::size_t d, std::size_t i) const final override
+  {
+    switch (d)
+    {
+    case 0:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            break;
+        case 1:
+            dofs[0] = 1;
+            break;
+        case 2:
+            dofs[0] = 2;
+            break;
+        case 3:
+            dofs[0] = 3;
+            break;
+        }
+        break;
+    }
+  }
+
+  void tabulate_entity_closure_dofs(std::size_t * dofs,
+                                    std::size_t d, std::size_t i) const final override
+  {
+    switch (d)
+    {
+    case 0:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            break;
+        case 1:
+            dofs[0] = 1;
+            break;
+        case 2:
+            dofs[0] = 2;
+            break;
+        case 3:
+            dofs[0] = 3;
+            break;
+        }
+        break;
+    case 1:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 2;
+            dofs[1] = 3;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 3;
+            break;
+        case 2:
+            dofs[0] = 1;
+            dofs[1] = 2;
+            break;
+        case 3:
+            dofs[0] = 0;
+            dofs[1] = 3;
+            break;
+        case 4:
+            dofs[0] = 0;
+            dofs[1] = 2;
+            break;
+        case 5:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            break;
+        }
+        break;
+    case 2:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 1;
+            dofs[1] = 2;
+            dofs[2] = 3;
+            break;
+        case 1:
+            dofs[0] = 0;
+            dofs[1] = 2;
+            dofs[2] = 3;
+            break;
+        case 2:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 3;
+            break;
+        case 3:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 2;
+            break;
+        }
+        break;
+    case 3:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 2;
+            dofs[3] = 3;
+            break;
+        }
+        break;
+    }
+  }
+
+
+  std::size_t num_sub_dofmaps() const final override
+  {
+    return 0;
+  }
+
+  ufc::dofmap * create_sub_dofmap(std::size_t i) const final override
+  {
+    return nullptr;
+  }
+
+  ufc::dofmap * create() const final override
+  {
+    return new magnetic_dofmap_0();
+  }
+
+};
+
+
+class magnetic_dofmap_1: public ufc::dofmap
+{
+public:
+
+  magnetic_dofmap_1() : ufc::dofmap()
+  {
+    // Do nothing
+  }
+
+  ~magnetic_dofmap_1() override
+  {
+    // Do nothing
+  }
+
+  const char * signature() const final override
+  {
+    return "FFC dofmap for VectorElement(FiniteElement('Lagrange', tetrahedron, 1), dim=3)";
+  }
+
+  bool needs_mesh_entities(std::size_t d) const final override
+  {
+    static const bool return_values[4] = { true, false, false, false };
+    if (d >= 4)
+        return false;
+    return return_values[d];
+  }
+
+  std::size_t topological_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t global_dimension(const std::vector<std::size_t>&
+                               num_global_entities) const final override
+  {
+    return 3 * num_global_entities[0];
+  }
+
+  std::size_t num_global_support_dofs() const final override
+  {
+    return 0;
+  }
+
+  std::size_t num_element_support_dofs() const final override
+  {
+    return 12;
+  }
+
+  std::size_t num_element_dofs() const final override
+  {
+    return 12;
+  }
+
+  std::size_t num_facet_dofs() const final override
+  {
+    return 9;
+  }
+
+  std::size_t num_entity_dofs(std::size_t d) const final override
+  {
+    static const std::size_t return_values[4] = { 3, 0, 0, 0 };
+    if (d >= 4)
+        return 0;
+    return return_values[d];
+  }
+
+  std::size_t num_entity_closure_dofs(std::size_t d) const final override
+  {
+    static const std::size_t return_values[4] = { 3, 6, 9, 12 };
+    if (d >= 4)
+        return 0;
+    return return_values[d];
+  }
+
+  void tabulate_dofs(std::size_t * dofs,
+                     const std::vector<std::size_t>& num_global_entities,
+                     const std::vector<std::vector<std::size_t>>& entity_indices) const final override
+  {
+    std::size_t offset = 0;
+    dofs[0] = offset + entity_indices[0][0];
+    dofs[1] = offset + entity_indices[0][1];
+    dofs[2] = offset + entity_indices[0][2];
+    dofs[3] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+    dofs[4] = offset + entity_indices[0][0];
+    dofs[5] = offset + entity_indices[0][1];
+    dofs[6] = offset + entity_indices[0][2];
+    dofs[7] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+    dofs[8] = offset + entity_indices[0][0];
+    dofs[9] = offset + entity_indices[0][1];
+    dofs[10] = offset + entity_indices[0][2];
+    dofs[11] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+  }
+
+  void tabulate_facet_dofs(std::size_t * dofs,
+                           std::size_t facet) const final override
+  {
+    switch (facet)
+    {
+    case 0:
+        dofs[0] = 1;
+        dofs[1] = 2;
+        dofs[2] = 3;
+        dofs[3] = 5;
+        dofs[4] = 6;
+        dofs[5] = 7;
+        dofs[6] = 9;
+        dofs[7] = 10;
+        dofs[8] = 11;
+        break;
+    case 1:
+        dofs[0] = 0;
+        dofs[1] = 2;
+        dofs[2] = 3;
+        dofs[3] = 4;
+        dofs[4] = 6;
+        dofs[5] = 7;
+        dofs[6] = 8;
+        dofs[7] = 10;
+        dofs[8] = 11;
+        break;
+    case 2:
+        dofs[0] = 0;
+        dofs[1] = 1;
+        dofs[2] = 3;
+        dofs[3] = 4;
+        dofs[4] = 5;
+        dofs[5] = 7;
+        dofs[6] = 8;
+        dofs[7] = 9;
+        dofs[8] = 11;
+        break;
+    case 3:
+        dofs[0] = 0;
+        dofs[1] = 1;
+        dofs[2] = 2;
+        dofs[3] = 4;
+        dofs[4] = 5;
+        dofs[5] = 6;
+        dofs[6] = 8;
+        dofs[7] = 9;
+        dofs[8] = 10;
+        break;
+    }
+  }
+
+  void tabulate_entity_dofs(std::size_t * dofs,
+                            std::size_t d, std::size_t i) const final override
+  {
+    switch (d)
+    {
+    case 0:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 4;
+            dofs[2] = 8;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 5;
+            dofs[2] = 9;
+            break;
+        case 2:
+            dofs[0] = 2;
+            dofs[1] = 6;
+            dofs[2] = 10;
+            break;
+        case 3:
+            dofs[0] = 3;
+            dofs[1] = 7;
+            dofs[2] = 11;
+            break;
+        }
+        break;
+    }
+  }
+
+  void tabulate_entity_closure_dofs(std::size_t * dofs,
+                                    std::size_t d, std::size_t i) const final override
+  {
+    switch (d)
+    {
+    case 0:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 4;
+            dofs[2] = 8;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 5;
+            dofs[2] = 9;
+            break;
+        case 2:
+            dofs[0] = 2;
+            dofs[1] = 6;
+            dofs[2] = 10;
+            break;
+        case 3:
+            dofs[0] = 3;
+            dofs[1] = 7;
+            dofs[2] = 11;
+            break;
+        }
+        break;
+    case 1:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 2;
+            dofs[1] = 3;
+            dofs[2] = 6;
+            dofs[3] = 7;
+            dofs[4] = 10;
+            dofs[5] = 11;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 3;
+            dofs[2] = 5;
+            dofs[3] = 7;
+            dofs[4] = 9;
+            dofs[5] = 11;
+            break;
+        case 2:
+            dofs[0] = 1;
+            dofs[1] = 2;
+            dofs[2] = 5;
+            dofs[3] = 6;
+            dofs[4] = 9;
+            dofs[5] = 10;
+            break;
+        case 3:
+            dofs[0] = 0;
+            dofs[1] = 3;
+            dofs[2] = 4;
+            dofs[3] = 7;
+            dofs[4] = 8;
+            dofs[5] = 11;
+            break;
+        case 4:
+            dofs[0] = 0;
+            dofs[1] = 2;
+            dofs[2] = 4;
+            dofs[3] = 6;
+            dofs[4] = 8;
+            dofs[5] = 10;
+            break;
+        case 5:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 4;
+            dofs[3] = 5;
+            dofs[4] = 8;
+            dofs[5] = 9;
+            break;
+        }
+        break;
+    case 2:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 1;
+            dofs[1] = 2;
+            dofs[2] = 3;
+            dofs[3] = 5;
+            dofs[4] = 6;
+            dofs[5] = 7;
+            dofs[6] = 9;
+            dofs[7] = 10;
+            dofs[8] = 11;
+            break;
+        case 1:
+            dofs[0] = 0;
+            dofs[1] = 2;
+            dofs[2] = 3;
+            dofs[3] = 4;
+            dofs[4] = 6;
+            dofs[5] = 7;
+            dofs[6] = 8;
+            dofs[7] = 10;
+            dofs[8] = 11;
+            break;
+        case 2:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 3;
+            dofs[3] = 4;
+            dofs[4] = 5;
+            dofs[5] = 7;
+            dofs[6] = 8;
+            dofs[7] = 9;
+            dofs[8] = 11;
+            break;
+        case 3:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 2;
+            dofs[3] = 4;
+            dofs[4] = 5;
+            dofs[5] = 6;
+            dofs[6] = 8;
+            dofs[7] = 9;
+            dofs[8] = 10;
+            break;
+        }
+        break;
+    case 3:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 2;
+            dofs[3] = 3;
+            dofs[4] = 4;
+            dofs[5] = 5;
+            dofs[6] = 6;
+            dofs[7] = 7;
+            dofs[8] = 8;
+            dofs[9] = 9;
+            dofs[10] = 10;
+            dofs[11] = 11;
+            break;
+        }
+        break;
+    }
+  }
+
+
+  std::size_t num_sub_dofmaps() const final override
+  {
+    return 3;
+  }
+
+  ufc::dofmap * create_sub_dofmap(std::size_t i) const final override
+  {
+    switch (i)
+    {
+    case 0:
+        return new magnetic_dofmap_0();
+    case 1:
+        return new magnetic_dofmap_0();
+    case 2:
+        return new magnetic_dofmap_0();
+    default:
+        return nullptr;
+    }
+  }
+
+  ufc::dofmap * create() const final override
+  {
+    return new magnetic_dofmap_1();
+  }
+
+};
+
+
+class magnetic_dofmap_2: public ufc::dofmap
+{
+public:
+
+  magnetic_dofmap_2() : ufc::dofmap()
+  {
+    // Do nothing
+  }
+
+  ~magnetic_dofmap_2() override
   {
     // Do nothing
   }
@@ -12675,22 +20223,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_0();
+    return new magnetic_dofmap_2();
   }
 
 };
 
 
-class magnetic_dofmap_1: public ufc::dofmap
+class magnetic_dofmap_3: public ufc::dofmap
 {
 public:
 
-  magnetic_dofmap_1() : ufc::dofmap()
+  magnetic_dofmap_3() : ufc::dofmap()
   {
     // Do nothing
   }
 
-  ~magnetic_dofmap_1() override
+  ~magnetic_dofmap_3() override
   {
     // Do nothing
   }
@@ -13191,616 +20739,6 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_0();
-    case 1:
-        return new magnetic_dofmap_0();
-    case 2:
-        return new magnetic_dofmap_0();
-    default:
-        return nullptr;
-    }
-  }
-
-  ufc::dofmap * create() const final override
-  {
-    return new magnetic_dofmap_1();
-  }
-
-};
-
-
-class magnetic_dofmap_2: public ufc::dofmap
-{
-public:
-
-  magnetic_dofmap_2() : ufc::dofmap()
-  {
-    // Do nothing
-  }
-
-  ~magnetic_dofmap_2() override
-  {
-    // Do nothing
-  }
-
-  const char * signature() const final override
-  {
-    return "FFC dofmap for FiniteElement('Lagrange', tetrahedron, 1)";
-  }
-
-  bool needs_mesh_entities(std::size_t d) const final override
-  {
-    static const bool return_values[4] = { true, false, false, false };
-    if (d >= 4)
-        return false;
-    return return_values[d];
-  }
-
-  std::size_t topological_dimension() const final override
-  {
-    return 3;
-  }
-
-  std::size_t global_dimension(const std::vector<std::size_t>&
-                               num_global_entities) const final override
-  {
-    return num_global_entities[0];
-  }
-
-  std::size_t num_global_support_dofs() const final override
-  {
-    return 0;
-  }
-
-  std::size_t num_element_support_dofs() const final override
-  {
-    return 4;
-  }
-
-  std::size_t num_element_dofs() const final override
-  {
-    return 4;
-  }
-
-  std::size_t num_facet_dofs() const final override
-  {
-    return 3;
-  }
-
-  std::size_t num_entity_dofs(std::size_t d) const final override
-  {
-    static const std::size_t return_values[4] = { 1, 0, 0, 0 };
-    if (d >= 4)
-        return 0;
-    return return_values[d];
-  }
-
-  std::size_t num_entity_closure_dofs(std::size_t d) const final override
-  {
-    static const std::size_t return_values[4] = { 1, 2, 3, 4 };
-    if (d >= 4)
-        return 0;
-    return return_values[d];
-  }
-
-  void tabulate_dofs(std::size_t * dofs,
-                     const std::vector<std::size_t>& num_global_entities,
-                     const std::vector<std::vector<std::size_t>>& entity_indices) const final override
-  {
-    dofs[0] = entity_indices[0][0];
-    dofs[1] = entity_indices[0][1];
-    dofs[2] = entity_indices[0][2];
-    dofs[3] = entity_indices[0][3];
-  }
-
-  void tabulate_facet_dofs(std::size_t * dofs,
-                           std::size_t facet) const final override
-  {
-    switch (facet)
-    {
-    case 0:
-        dofs[0] = 1;
-        dofs[1] = 2;
-        dofs[2] = 3;
-        break;
-    case 1:
-        dofs[0] = 0;
-        dofs[1] = 2;
-        dofs[2] = 3;
-        break;
-    case 2:
-        dofs[0] = 0;
-        dofs[1] = 1;
-        dofs[2] = 3;
-        break;
-    case 3:
-        dofs[0] = 0;
-        dofs[1] = 1;
-        dofs[2] = 2;
-        break;
-    }
-  }
-
-  void tabulate_entity_dofs(std::size_t * dofs,
-                            std::size_t d, std::size_t i) const final override
-  {
-    switch (d)
-    {
-    case 0:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 0;
-            break;
-        case 1:
-            dofs[0] = 1;
-            break;
-        case 2:
-            dofs[0] = 2;
-            break;
-        case 3:
-            dofs[0] = 3;
-            break;
-        }
-        break;
-    }
-  }
-
-  void tabulate_entity_closure_dofs(std::size_t * dofs,
-                                    std::size_t d, std::size_t i) const final override
-  {
-    switch (d)
-    {
-    case 0:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 0;
-            break;
-        case 1:
-            dofs[0] = 1;
-            break;
-        case 2:
-            dofs[0] = 2;
-            break;
-        case 3:
-            dofs[0] = 3;
-            break;
-        }
-        break;
-    case 1:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 2;
-            dofs[1] = 3;
-            break;
-        case 1:
-            dofs[0] = 1;
-            dofs[1] = 3;
-            break;
-        case 2:
-            dofs[0] = 1;
-            dofs[1] = 2;
-            break;
-        case 3:
-            dofs[0] = 0;
-            dofs[1] = 3;
-            break;
-        case 4:
-            dofs[0] = 0;
-            dofs[1] = 2;
-            break;
-        case 5:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            break;
-        }
-        break;
-    case 2:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 1;
-            dofs[1] = 2;
-            dofs[2] = 3;
-            break;
-        case 1:
-            dofs[0] = 0;
-            dofs[1] = 2;
-            dofs[2] = 3;
-            break;
-        case 2:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 3;
-            break;
-        case 3:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 2;
-            break;
-        }
-        break;
-    case 3:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 2;
-            dofs[3] = 3;
-            break;
-        }
-        break;
-    }
-  }
-
-
-  std::size_t num_sub_dofmaps() const final override
-  {
-    return 0;
-  }
-
-  ufc::dofmap * create_sub_dofmap(std::size_t i) const final override
-  {
-    return nullptr;
-  }
-
-  ufc::dofmap * create() const final override
-  {
-    return new magnetic_dofmap_2();
-  }
-
-};
-
-
-class magnetic_dofmap_3: public ufc::dofmap
-{
-public:
-
-  magnetic_dofmap_3() : ufc::dofmap()
-  {
-    // Do nothing
-  }
-
-  ~magnetic_dofmap_3() override
-  {
-    // Do nothing
-  }
-
-  const char * signature() const final override
-  {
-    return "FFC dofmap for VectorElement(FiniteElement('Lagrange', tetrahedron, 1), dim=3)";
-  }
-
-  bool needs_mesh_entities(std::size_t d) const final override
-  {
-    static const bool return_values[4] = { true, false, false, false };
-    if (d >= 4)
-        return false;
-    return return_values[d];
-  }
-
-  std::size_t topological_dimension() const final override
-  {
-    return 3;
-  }
-
-  std::size_t global_dimension(const std::vector<std::size_t>&
-                               num_global_entities) const final override
-  {
-    return 3 * num_global_entities[0];
-  }
-
-  std::size_t num_global_support_dofs() const final override
-  {
-    return 0;
-  }
-
-  std::size_t num_element_support_dofs() const final override
-  {
-    return 12;
-  }
-
-  std::size_t num_element_dofs() const final override
-  {
-    return 12;
-  }
-
-  std::size_t num_facet_dofs() const final override
-  {
-    return 9;
-  }
-
-  std::size_t num_entity_dofs(std::size_t d) const final override
-  {
-    static const std::size_t return_values[4] = { 3, 0, 0, 0 };
-    if (d >= 4)
-        return 0;
-    return return_values[d];
-  }
-
-  std::size_t num_entity_closure_dofs(std::size_t d) const final override
-  {
-    static const std::size_t return_values[4] = { 3, 6, 9, 12 };
-    if (d >= 4)
-        return 0;
-    return return_values[d];
-  }
-
-  void tabulate_dofs(std::size_t * dofs,
-                     const std::vector<std::size_t>& num_global_entities,
-                     const std::vector<std::vector<std::size_t>>& entity_indices) const final override
-  {
-    std::size_t offset = 0;
-    dofs[0] = offset + entity_indices[0][0];
-    dofs[1] = offset + entity_indices[0][1];
-    dofs[2] = offset + entity_indices[0][2];
-    dofs[3] = offset + entity_indices[0][3];
-    offset += num_global_entities[0];
-    dofs[4] = offset + entity_indices[0][0];
-    dofs[5] = offset + entity_indices[0][1];
-    dofs[6] = offset + entity_indices[0][2];
-    dofs[7] = offset + entity_indices[0][3];
-    offset += num_global_entities[0];
-    dofs[8] = offset + entity_indices[0][0];
-    dofs[9] = offset + entity_indices[0][1];
-    dofs[10] = offset + entity_indices[0][2];
-    dofs[11] = offset + entity_indices[0][3];
-    offset += num_global_entities[0];
-  }
-
-  void tabulate_facet_dofs(std::size_t * dofs,
-                           std::size_t facet) const final override
-  {
-    switch (facet)
-    {
-    case 0:
-        dofs[0] = 1;
-        dofs[1] = 2;
-        dofs[2] = 3;
-        dofs[3] = 5;
-        dofs[4] = 6;
-        dofs[5] = 7;
-        dofs[6] = 9;
-        dofs[7] = 10;
-        dofs[8] = 11;
-        break;
-    case 1:
-        dofs[0] = 0;
-        dofs[1] = 2;
-        dofs[2] = 3;
-        dofs[3] = 4;
-        dofs[4] = 6;
-        dofs[5] = 7;
-        dofs[6] = 8;
-        dofs[7] = 10;
-        dofs[8] = 11;
-        break;
-    case 2:
-        dofs[0] = 0;
-        dofs[1] = 1;
-        dofs[2] = 3;
-        dofs[3] = 4;
-        dofs[4] = 5;
-        dofs[5] = 7;
-        dofs[6] = 8;
-        dofs[7] = 9;
-        dofs[8] = 11;
-        break;
-    case 3:
-        dofs[0] = 0;
-        dofs[1] = 1;
-        dofs[2] = 2;
-        dofs[3] = 4;
-        dofs[4] = 5;
-        dofs[5] = 6;
-        dofs[6] = 8;
-        dofs[7] = 9;
-        dofs[8] = 10;
-        break;
-    }
-  }
-
-  void tabulate_entity_dofs(std::size_t * dofs,
-                            std::size_t d, std::size_t i) const final override
-  {
-    switch (d)
-    {
-    case 0:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 0;
-            dofs[1] = 4;
-            dofs[2] = 8;
-            break;
-        case 1:
-            dofs[0] = 1;
-            dofs[1] = 5;
-            dofs[2] = 9;
-            break;
-        case 2:
-            dofs[0] = 2;
-            dofs[1] = 6;
-            dofs[2] = 10;
-            break;
-        case 3:
-            dofs[0] = 3;
-            dofs[1] = 7;
-            dofs[2] = 11;
-            break;
-        }
-        break;
-    }
-  }
-
-  void tabulate_entity_closure_dofs(std::size_t * dofs,
-                                    std::size_t d, std::size_t i) const final override
-  {
-    switch (d)
-    {
-    case 0:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 0;
-            dofs[1] = 4;
-            dofs[2] = 8;
-            break;
-        case 1:
-            dofs[0] = 1;
-            dofs[1] = 5;
-            dofs[2] = 9;
-            break;
-        case 2:
-            dofs[0] = 2;
-            dofs[1] = 6;
-            dofs[2] = 10;
-            break;
-        case 3:
-            dofs[0] = 3;
-            dofs[1] = 7;
-            dofs[2] = 11;
-            break;
-        }
-        break;
-    case 1:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 2;
-            dofs[1] = 3;
-            dofs[2] = 6;
-            dofs[3] = 7;
-            dofs[4] = 10;
-            dofs[5] = 11;
-            break;
-        case 1:
-            dofs[0] = 1;
-            dofs[1] = 3;
-            dofs[2] = 5;
-            dofs[3] = 7;
-            dofs[4] = 9;
-            dofs[5] = 11;
-            break;
-        case 2:
-            dofs[0] = 1;
-            dofs[1] = 2;
-            dofs[2] = 5;
-            dofs[3] = 6;
-            dofs[4] = 9;
-            dofs[5] = 10;
-            break;
-        case 3:
-            dofs[0] = 0;
-            dofs[1] = 3;
-            dofs[2] = 4;
-            dofs[3] = 7;
-            dofs[4] = 8;
-            dofs[5] = 11;
-            break;
-        case 4:
-            dofs[0] = 0;
-            dofs[1] = 2;
-            dofs[2] = 4;
-            dofs[3] = 6;
-            dofs[4] = 8;
-            dofs[5] = 10;
-            break;
-        case 5:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 4;
-            dofs[3] = 5;
-            dofs[4] = 8;
-            dofs[5] = 9;
-            break;
-        }
-        break;
-    case 2:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 1;
-            dofs[1] = 2;
-            dofs[2] = 3;
-            dofs[3] = 5;
-            dofs[4] = 6;
-            dofs[5] = 7;
-            dofs[6] = 9;
-            dofs[7] = 10;
-            dofs[8] = 11;
-            break;
-        case 1:
-            dofs[0] = 0;
-            dofs[1] = 2;
-            dofs[2] = 3;
-            dofs[3] = 4;
-            dofs[4] = 6;
-            dofs[5] = 7;
-            dofs[6] = 8;
-            dofs[7] = 10;
-            dofs[8] = 11;
-            break;
-        case 2:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 3;
-            dofs[3] = 4;
-            dofs[4] = 5;
-            dofs[5] = 7;
-            dofs[6] = 8;
-            dofs[7] = 9;
-            dofs[8] = 11;
-            break;
-        case 3:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 2;
-            dofs[3] = 4;
-            dofs[4] = 5;
-            dofs[5] = 6;
-            dofs[6] = 8;
-            dofs[7] = 9;
-            dofs[8] = 10;
-            break;
-        }
-        break;
-    case 3:
-        switch (i)
-        {
-        case 0:
-            dofs[0] = 0;
-            dofs[1] = 1;
-            dofs[2] = 2;
-            dofs[3] = 3;
-            dofs[4] = 4;
-            dofs[5] = 5;
-            dofs[6] = 6;
-            dofs[7] = 7;
-            dofs[8] = 8;
-            dofs[9] = 9;
-            dofs[10] = 10;
-            dofs[11] = 11;
-            break;
-        }
-        break;
-    }
-  }
-
-
-  std::size_t num_sub_dofmaps() const final override
-  {
-    return 3;
-  }
-
-  ufc::dofmap * create_sub_dofmap(std::size_t i) const final override
-  {
-    switch (i)
-    {
-    case 0:
         return new magnetic_dofmap_2();
     case 1:
         return new magnetic_dofmap_2();
@@ -13829,6 +20767,585 @@ public:
   }
 
   ~magnetic_dofmap_4() override
+  {
+    // Do nothing
+  }
+
+  const char * signature() const final override
+  {
+    return "FFC dofmap for MixedElement(VectorElement(FiniteElement('Lagrange', tetrahedron, 2), dim=3), FiniteElement('Lagrange', tetrahedron, 1))";
+  }
+
+  bool needs_mesh_entities(std::size_t d) const final override
+  {
+    static const bool return_values[4] = { true, true, false, false };
+    if (d >= 4)
+        return false;
+    return return_values[d];
+  }
+
+  std::size_t topological_dimension() const final override
+  {
+    return 3;
+  }
+
+  std::size_t global_dimension(const std::vector<std::size_t>&
+                               num_global_entities) const final override
+  {
+    return 4 * num_global_entities[0] + 3 * num_global_entities[1];
+  }
+
+  std::size_t num_global_support_dofs() const final override
+  {
+    return 0;
+  }
+
+  std::size_t num_element_support_dofs() const final override
+  {
+    return 34;
+  }
+
+  std::size_t num_element_dofs() const final override
+  {
+    return 34;
+  }
+
+  std::size_t num_facet_dofs() const final override
+  {
+    return 21;
+  }
+
+  std::size_t num_entity_dofs(std::size_t d) const final override
+  {
+    static const std::size_t return_values[4] = { 4, 3, 0, 0 };
+    if (d >= 4)
+        return 0;
+    return return_values[d];
+  }
+
+  std::size_t num_entity_closure_dofs(std::size_t d) const final override
+  {
+    static const std::size_t return_values[4] = { 4, 11, 21, 34 };
+    if (d >= 4)
+        return 0;
+    return return_values[d];
+  }
+
+  void tabulate_dofs(std::size_t * dofs,
+                     const std::vector<std::size_t>& num_global_entities,
+                     const std::vector<std::vector<std::size_t>>& entity_indices) const final override
+  {
+    std::size_t offset = 0;
+    dofs[0] = offset + entity_indices[0][0];
+    dofs[1] = offset + entity_indices[0][1];
+    dofs[2] = offset + entity_indices[0][2];
+    dofs[3] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+    dofs[4] = offset + entity_indices[1][0];
+    dofs[5] = offset + entity_indices[1][1];
+    dofs[6] = offset + entity_indices[1][2];
+    dofs[7] = offset + entity_indices[1][3];
+    dofs[8] = offset + entity_indices[1][4];
+    dofs[9] = offset + entity_indices[1][5];
+    offset += num_global_entities[1];
+    dofs[10] = offset + entity_indices[0][0];
+    dofs[11] = offset + entity_indices[0][1];
+    dofs[12] = offset + entity_indices[0][2];
+    dofs[13] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+    dofs[14] = offset + entity_indices[1][0];
+    dofs[15] = offset + entity_indices[1][1];
+    dofs[16] = offset + entity_indices[1][2];
+    dofs[17] = offset + entity_indices[1][3];
+    dofs[18] = offset + entity_indices[1][4];
+    dofs[19] = offset + entity_indices[1][5];
+    offset += num_global_entities[1];
+    dofs[20] = offset + entity_indices[0][0];
+    dofs[21] = offset + entity_indices[0][1];
+    dofs[22] = offset + entity_indices[0][2];
+    dofs[23] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+    dofs[24] = offset + entity_indices[1][0];
+    dofs[25] = offset + entity_indices[1][1];
+    dofs[26] = offset + entity_indices[1][2];
+    dofs[27] = offset + entity_indices[1][3];
+    dofs[28] = offset + entity_indices[1][4];
+    dofs[29] = offset + entity_indices[1][5];
+    offset += num_global_entities[1];
+    dofs[30] = offset + entity_indices[0][0];
+    dofs[31] = offset + entity_indices[0][1];
+    dofs[32] = offset + entity_indices[0][2];
+    dofs[33] = offset + entity_indices[0][3];
+    offset += num_global_entities[0];
+  }
+
+  void tabulate_facet_dofs(std::size_t * dofs,
+                           std::size_t facet) const final override
+  {
+    switch (facet)
+    {
+    case 0:
+        dofs[0] = 1;
+        dofs[1] = 2;
+        dofs[2] = 3;
+        dofs[3] = 4;
+        dofs[4] = 5;
+        dofs[5] = 6;
+        dofs[6] = 11;
+        dofs[7] = 12;
+        dofs[8] = 13;
+        dofs[9] = 14;
+        dofs[10] = 15;
+        dofs[11] = 16;
+        dofs[12] = 21;
+        dofs[13] = 22;
+        dofs[14] = 23;
+        dofs[15] = 24;
+        dofs[16] = 25;
+        dofs[17] = 26;
+        dofs[18] = 31;
+        dofs[19] = 32;
+        dofs[20] = 33;
+        break;
+    case 1:
+        dofs[0] = 0;
+        dofs[1] = 2;
+        dofs[2] = 3;
+        dofs[3] = 4;
+        dofs[4] = 7;
+        dofs[5] = 8;
+        dofs[6] = 10;
+        dofs[7] = 12;
+        dofs[8] = 13;
+        dofs[9] = 14;
+        dofs[10] = 17;
+        dofs[11] = 18;
+        dofs[12] = 20;
+        dofs[13] = 22;
+        dofs[14] = 23;
+        dofs[15] = 24;
+        dofs[16] = 27;
+        dofs[17] = 28;
+        dofs[18] = 30;
+        dofs[19] = 32;
+        dofs[20] = 33;
+        break;
+    case 2:
+        dofs[0] = 0;
+        dofs[1] = 1;
+        dofs[2] = 3;
+        dofs[3] = 5;
+        dofs[4] = 7;
+        dofs[5] = 9;
+        dofs[6] = 10;
+        dofs[7] = 11;
+        dofs[8] = 13;
+        dofs[9] = 15;
+        dofs[10] = 17;
+        dofs[11] = 19;
+        dofs[12] = 20;
+        dofs[13] = 21;
+        dofs[14] = 23;
+        dofs[15] = 25;
+        dofs[16] = 27;
+        dofs[17] = 29;
+        dofs[18] = 30;
+        dofs[19] = 31;
+        dofs[20] = 33;
+        break;
+    case 3:
+        dofs[0] = 0;
+        dofs[1] = 1;
+        dofs[2] = 2;
+        dofs[3] = 6;
+        dofs[4] = 8;
+        dofs[5] = 9;
+        dofs[6] = 10;
+        dofs[7] = 11;
+        dofs[8] = 12;
+        dofs[9] = 16;
+        dofs[10] = 18;
+        dofs[11] = 19;
+        dofs[12] = 20;
+        dofs[13] = 21;
+        dofs[14] = 22;
+        dofs[15] = 26;
+        dofs[16] = 28;
+        dofs[17] = 29;
+        dofs[18] = 30;
+        dofs[19] = 31;
+        dofs[20] = 32;
+        break;
+    }
+  }
+
+  void tabulate_entity_dofs(std::size_t * dofs,
+                            std::size_t d, std::size_t i) const final override
+  {
+    switch (d)
+    {
+    case 0:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 10;
+            dofs[2] = 20;
+            dofs[3] = 30;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 11;
+            dofs[2] = 21;
+            dofs[3] = 31;
+            break;
+        case 2:
+            dofs[0] = 2;
+            dofs[1] = 12;
+            dofs[2] = 22;
+            dofs[3] = 32;
+            break;
+        case 3:
+            dofs[0] = 3;
+            dofs[1] = 13;
+            dofs[2] = 23;
+            dofs[3] = 33;
+            break;
+        }
+        break;
+    case 1:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 4;
+            dofs[1] = 14;
+            dofs[2] = 24;
+            break;
+        case 1:
+            dofs[0] = 5;
+            dofs[1] = 15;
+            dofs[2] = 25;
+            break;
+        case 2:
+            dofs[0] = 6;
+            dofs[1] = 16;
+            dofs[2] = 26;
+            break;
+        case 3:
+            dofs[0] = 7;
+            dofs[1] = 17;
+            dofs[2] = 27;
+            break;
+        case 4:
+            dofs[0] = 8;
+            dofs[1] = 18;
+            dofs[2] = 28;
+            break;
+        case 5:
+            dofs[0] = 9;
+            dofs[1] = 19;
+            dofs[2] = 29;
+            break;
+        }
+        break;
+    }
+  }
+
+  void tabulate_entity_closure_dofs(std::size_t * dofs,
+                                    std::size_t d, std::size_t i) const final override
+  {
+    switch (d)
+    {
+    case 0:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 10;
+            dofs[2] = 20;
+            dofs[3] = 30;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 11;
+            dofs[2] = 21;
+            dofs[3] = 31;
+            break;
+        case 2:
+            dofs[0] = 2;
+            dofs[1] = 12;
+            dofs[2] = 22;
+            dofs[3] = 32;
+            break;
+        case 3:
+            dofs[0] = 3;
+            dofs[1] = 13;
+            dofs[2] = 23;
+            dofs[3] = 33;
+            break;
+        }
+        break;
+    case 1:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 2;
+            dofs[1] = 3;
+            dofs[2] = 4;
+            dofs[3] = 12;
+            dofs[4] = 13;
+            dofs[5] = 14;
+            dofs[6] = 22;
+            dofs[7] = 23;
+            dofs[8] = 24;
+            dofs[9] = 32;
+            dofs[10] = 33;
+            break;
+        case 1:
+            dofs[0] = 1;
+            dofs[1] = 3;
+            dofs[2] = 5;
+            dofs[3] = 11;
+            dofs[4] = 13;
+            dofs[5] = 15;
+            dofs[6] = 21;
+            dofs[7] = 23;
+            dofs[8] = 25;
+            dofs[9] = 31;
+            dofs[10] = 33;
+            break;
+        case 2:
+            dofs[0] = 1;
+            dofs[1] = 2;
+            dofs[2] = 6;
+            dofs[3] = 11;
+            dofs[4] = 12;
+            dofs[5] = 16;
+            dofs[6] = 21;
+            dofs[7] = 22;
+            dofs[8] = 26;
+            dofs[9] = 31;
+            dofs[10] = 32;
+            break;
+        case 3:
+            dofs[0] = 0;
+            dofs[1] = 3;
+            dofs[2] = 7;
+            dofs[3] = 10;
+            dofs[4] = 13;
+            dofs[5] = 17;
+            dofs[6] = 20;
+            dofs[7] = 23;
+            dofs[8] = 27;
+            dofs[9] = 30;
+            dofs[10] = 33;
+            break;
+        case 4:
+            dofs[0] = 0;
+            dofs[1] = 2;
+            dofs[2] = 8;
+            dofs[3] = 10;
+            dofs[4] = 12;
+            dofs[5] = 18;
+            dofs[6] = 20;
+            dofs[7] = 22;
+            dofs[8] = 28;
+            dofs[9] = 30;
+            dofs[10] = 32;
+            break;
+        case 5:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 9;
+            dofs[3] = 10;
+            dofs[4] = 11;
+            dofs[5] = 19;
+            dofs[6] = 20;
+            dofs[7] = 21;
+            dofs[8] = 29;
+            dofs[9] = 30;
+            dofs[10] = 31;
+            break;
+        }
+        break;
+    case 2:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 1;
+            dofs[1] = 2;
+            dofs[2] = 3;
+            dofs[3] = 4;
+            dofs[4] = 5;
+            dofs[5] = 6;
+            dofs[6] = 11;
+            dofs[7] = 12;
+            dofs[8] = 13;
+            dofs[9] = 14;
+            dofs[10] = 15;
+            dofs[11] = 16;
+            dofs[12] = 21;
+            dofs[13] = 22;
+            dofs[14] = 23;
+            dofs[15] = 24;
+            dofs[16] = 25;
+            dofs[17] = 26;
+            dofs[18] = 31;
+            dofs[19] = 32;
+            dofs[20] = 33;
+            break;
+        case 1:
+            dofs[0] = 0;
+            dofs[1] = 2;
+            dofs[2] = 3;
+            dofs[3] = 4;
+            dofs[4] = 7;
+            dofs[5] = 8;
+            dofs[6] = 10;
+            dofs[7] = 12;
+            dofs[8] = 13;
+            dofs[9] = 14;
+            dofs[10] = 17;
+            dofs[11] = 18;
+            dofs[12] = 20;
+            dofs[13] = 22;
+            dofs[14] = 23;
+            dofs[15] = 24;
+            dofs[16] = 27;
+            dofs[17] = 28;
+            dofs[18] = 30;
+            dofs[19] = 32;
+            dofs[20] = 33;
+            break;
+        case 2:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 3;
+            dofs[3] = 5;
+            dofs[4] = 7;
+            dofs[5] = 9;
+            dofs[6] = 10;
+            dofs[7] = 11;
+            dofs[8] = 13;
+            dofs[9] = 15;
+            dofs[10] = 17;
+            dofs[11] = 19;
+            dofs[12] = 20;
+            dofs[13] = 21;
+            dofs[14] = 23;
+            dofs[15] = 25;
+            dofs[16] = 27;
+            dofs[17] = 29;
+            dofs[18] = 30;
+            dofs[19] = 31;
+            dofs[20] = 33;
+            break;
+        case 3:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 2;
+            dofs[3] = 6;
+            dofs[4] = 8;
+            dofs[5] = 9;
+            dofs[6] = 10;
+            dofs[7] = 11;
+            dofs[8] = 12;
+            dofs[9] = 16;
+            dofs[10] = 18;
+            dofs[11] = 19;
+            dofs[12] = 20;
+            dofs[13] = 21;
+            dofs[14] = 22;
+            dofs[15] = 26;
+            dofs[16] = 28;
+            dofs[17] = 29;
+            dofs[18] = 30;
+            dofs[19] = 31;
+            dofs[20] = 32;
+            break;
+        }
+        break;
+    case 3:
+        switch (i)
+        {
+        case 0:
+            dofs[0] = 0;
+            dofs[1] = 1;
+            dofs[2] = 2;
+            dofs[3] = 3;
+            dofs[4] = 4;
+            dofs[5] = 5;
+            dofs[6] = 6;
+            dofs[7] = 7;
+            dofs[8] = 8;
+            dofs[9] = 9;
+            dofs[10] = 10;
+            dofs[11] = 11;
+            dofs[12] = 12;
+            dofs[13] = 13;
+            dofs[14] = 14;
+            dofs[15] = 15;
+            dofs[16] = 16;
+            dofs[17] = 17;
+            dofs[18] = 18;
+            dofs[19] = 19;
+            dofs[20] = 20;
+            dofs[21] = 21;
+            dofs[22] = 22;
+            dofs[23] = 23;
+            dofs[24] = 24;
+            dofs[25] = 25;
+            dofs[26] = 26;
+            dofs[27] = 27;
+            dofs[28] = 28;
+            dofs[29] = 29;
+            dofs[30] = 30;
+            dofs[31] = 31;
+            dofs[32] = 32;
+            dofs[33] = 33;
+            break;
+        }
+        break;
+    }
+  }
+
+
+  std::size_t num_sub_dofmaps() const final override
+  {
+    return 2;
+  }
+
+  ufc::dofmap * create_sub_dofmap(std::size_t i) const final override
+  {
+    switch (i)
+    {
+    case 0:
+        return new magnetic_dofmap_3();
+    case 1:
+        return new magnetic_dofmap_0();
+    default:
+        return nullptr;
+    }
+  }
+
+  ufc::dofmap * create() const final override
+  {
+    return new magnetic_dofmap_4();
+  }
+
+};
+
+
+class magnetic_dofmap_5: public ufc::dofmap
+{
+public:
+
+  magnetic_dofmap_5() : ufc::dofmap()
+  {
+    // Do nothing
+  }
+
+  ~magnetic_dofmap_5() override
   {
     // Do nothing
   }
@@ -13994,22 +21511,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_4();
+    return new magnetic_dofmap_5();
   }
 
 };
 
 
-class magnetic_coordinate_mapping_3: public ufc::coordinate_mapping
+class magnetic_coordinate_mapping_1: public ufc::coordinate_mapping
 {
 public:
 
-  magnetic_coordinate_mapping_3() : ufc::coordinate_mapping()
+  magnetic_coordinate_mapping_1() : ufc::coordinate_mapping()
   {
     // Do nothing
   }
 
-  ~magnetic_coordinate_mapping_3() override
+  ~magnetic_coordinate_mapping_1() override
   {
     // Do nothing
   }
@@ -14021,7 +21538,7 @@ public:
 
   ufc::coordinate_mapping * create() const final override
   {
-    return new magnetic_coordinate_mapping_3();
+    return new magnetic_coordinate_mapping_1();
   }
 
   std::size_t geometric_dimension() const final override
@@ -14041,12 +21558,12 @@ public:
 
   ufc::finite_element * create_coordinate_finite_element() const final override
   {
-    return new magnetic_finite_element_3();
+    return new magnetic_finite_element_1();
   }
 
   ufc::dofmap * create_coordinate_dofmap() const final override
   {
-    return new magnetic_dofmap_3();
+    return new magnetic_dofmap_1();
   }
 
   void compute_physical_coordinates(
@@ -14054,7 +21571,7 @@ public:
       const double * X,
       const double * coordinate_dofs) const final override
   {
-    magnetic_finite_element_2 xelement;
+    magnetic_finite_element_0 xelement;
     double phi[4];
     for (std::size_t ip = 0; ip < num_points; ++ip)
     {
@@ -14137,7 +21654,7 @@ public:
       const double * X,
       const double * coordinate_dofs) const final override
   {
-    magnetic_finite_element_2 xelement;
+    magnetic_finite_element_0 xelement;
     double dphi[12];
     for (std::size_t ip = 0; ip < num_points; ++ip)
     {
@@ -14244,72 +21761,127 @@ return enabled;
     // num_cells:         None
     // optimize:          True
     // precision:         16
-    // quadrature_degree: 6
+    // quadrature_degree: 5
     // quadrature_rule:   'default'
     // representation:    'uflacs'
     // 
     // and the following integral 0 metadata:
     // 
-    // estimated_polynomial_degree: 6
+    // estimated_polynomial_degree: 5
     // optimize:                    True
     // precision:                   16
-    // quadrature_degree:           6
+    // quadrature_degree:           5
     // quadrature_rule:             'default'
     // representation:              'uflacs'
     // Quadrature rules
-    alignas(32) static const double weights24[24] = { 0.006653791709694649, 0.006653791709694649, 0.006653791709694649, 0.006653791709694649, 0.001679535175886783, 0.001679535175886783, 0.001679535175886783, 0.001679535175886783, 0.009226196923942399, 0.009226196923942399, 0.009226196923942399, 0.009226196923942399, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283, 0.008035714285714283 };
+    alignas(32) static const double weights15[15] = { 0.03028367809708918, 0.006026785714285717, 0.006026785714285717, 0.006026785714285717, 0.006026785714285717, 0.01164524908602897, 0.01164524908602897, 0.01164524908602897, 0.01164524908602897, 0.01094914156138645, 0.01094914156138645, 0.01094914156138645, 0.01094914156138645, 0.01094914156138645, 0.01094914156138645 };
     // Precomputed values of basis functions and precomputations
     // FE* dimensions: [entities][points][dofs]
     // PI* dimensions: [entities][dofs][dofs] or [entities][dofs]
     // PM* dimensions: [entities][dofs][dofs]
-    alignas(32) static const double FE18_C0_D001_Q24[1][1][2] = { { { -1.0, 1.0 } } };
-    alignas(32) static const double FE8_C0_Q24[1][24][10] =
-        { { { -0.1224940865538076, -0.1024467789842685, -0.1224940865538076, -0.1224940865538077, 0.1842175694106881, 0.3057587768045423, 0.3057587768045423, 0.1842175694106882, 0.184217569410688, 0.3057587768045424 },
-            { -0.1024467789842685, -0.1224940865538076, -0.1224940865538076, -0.1224940865538077, 0.1842175694106881, 0.1842175694106881, 0.1842175694106881, 0.3057587768045423, 0.3057587768045423, 0.3057587768045424 },
-            { -0.1224940865538076, -0.1224940865538075, -0.1224940865538076, -0.1024467789842687, 0.3057587768045424, 0.3057587768045424, 0.1842175694106881, 0.3057587768045424, 0.184217569410688, 0.1842175694106881 },
-            { -0.1224940865538076, -0.1224940865538075, -0.1024467789842686, -0.1224940865538077, 0.3057587768045423, 0.1842175694106882, 0.3057587768045424, 0.1842175694106882, 0.3057587768045423, 0.1842175694106881 },
-            { -0.03736521672886085, 0.6637130494402528, -0.03736521672886074, -0.03736521672886076, 0.006617483611501128, 0.1428433833039419, 0.1428433833039418, 0.006617483611501149, 0.006617483611501079, 0.1428433833039423 },
-            { 0.6637130494402532, -0.03736521672886067, -0.03736521672886071, -0.03736521672886076, 0.0066174836115011, 0.006617483611501142, 0.006617483611501093, 0.142843383303942, 0.1428433833039419, 0.1428433833039416 },
-            { -0.03736521672886078, -0.03736521672886065, -0.03736521672886083, 0.663713049440253, 0.142843383303942, 0.1428433833039419, 0.006617483611501176, 0.1428433833039421, 0.006617483611501093, 0.006617483611501135 },
-            { -0.03736521672886083, -0.03736521672886072, 0.6637130494402527, -0.03736521672886076, 0.1428433833039419, 0.006617483611501031, 0.142843383303942, 0.006617483611501121, 0.1428433833039422, 0.006617483611501095 },
-            { -0.1145344592995281, -0.03081013369575306, -0.1145344592995281, -0.1145344592995282, 0.4156068616854953, 0.04253097551261759, 0.04253097551261752, 0.415606861685495, 0.4156068616854949, 0.04253097551261749 },
-            { -0.03081013369575288, -0.114534459299528, -0.1145344592995281, -0.1145344592995282, 0.4156068616854953, 0.4156068616854953, 0.4156068616854953, 0.04253097551261718, 0.04253097551261703, 0.04253097551261721 },
-            { -0.1145344592995281, -0.114534459299528, -0.1145344592995281, -0.03081013369575311, 0.04253097551261749, 0.04253097551261749, 0.4156068616854952, 0.04253097551261746, 0.4156068616854947, 0.4156068616854949 },
-            { -0.1145344592995281, -0.114534459299528, -0.03081013369575312, -0.1145344592995282, 0.04253097551261757, 0.4156068616854953, 0.04253097551261745, 0.4156068616854949, 0.04253097551261736, 0.4156068616854949 },
-            { 0.1242259987499884, -0.1242259987499883, -0.05555555555555552, -0.05555555555555557, 0.01621089263892391, 0.0686704431944328, 0.06867044319443276, 0.1535517790277894, 0.1535517790277894, 0.6504557740277429 },
-            { 0.1242259987499884, -0.0555555555555555, -0.1242259987499883, -0.05555555555555557, 0.0686704431944328, 0.0162108926389239, 0.06867044319443276, 0.1535517790277894, 0.6504557740277428, 0.1535517790277893 },
-            { 0.1242259987499884, -0.05555555555555546, -0.0555555555555555, -0.1242259987499884, 0.06867044319443276, 0.0686704431944328, 0.0162108926389239, 0.650455774027743, 0.1535517790277894, 0.1535517790277894 },
-            { -0.1242259987499882, 0.1242259987499882, -0.05555555555555555, -0.05555555555555557, 0.01621089263892394, 0.1535517790277894, 0.1535517790277894, 0.0686704431944328, 0.06867044319443273, 0.650455774027743 },
-            { -0.1242259987499882, -0.0555555555555555, 0.1242259987499882, -0.05555555555555557, 0.1535517790277894, 0.01621089263892393, 0.1535517790277895, 0.0686704431944328, 0.6504557740277428, 0.06867044319443273 },
-            { -0.1242259987499883, -0.05555555555555543, -0.05555555555555557, 0.1242259987499882, 0.1535517790277894, 0.1535517790277894, 0.01621089263892395, 0.6504557740277429, 0.06867044319443272, 0.06867044319443276 },
-            { -0.05555555555555553, -0.05555555555555548, -0.1242259987499883, 0.1242259987499882, 0.6504557740277428, 0.1535517790277894, 0.06867044319443277, 0.1535517790277895, 0.06867044319443275, 0.01621089263892395 },
-            { -0.05555555555555555, -0.1242259987499882, 0.1242259987499883, -0.05555555555555557, 0.1535517790277895, 0.06867044319443275, 0.6504557740277429, 0.01621089263892397, 0.1535517790277894, 0.06867044319443279 },
-            { -0.05555555555555557, 0.1242259987499882, -0.05555555555555555, -0.1242259987499884, 0.06867044319443287, 0.6504557740277428, 0.1535517790277894, 0.06867044319443276, 0.01621089263892388, 0.1535517790277896 },
-            { -0.05555555555555555, -0.0555555555555555, 0.1242259987499882, -0.1242259987499884, 0.6504557740277429, 0.06867044319443276, 0.1535517790277894, 0.06867044319443284, 0.1535517790277894, 0.01621089263892397 },
-            { -0.05555555555555553, -0.1242259987499883, -0.05555555555555559, 0.1242259987499882, 0.1535517790277895, 0.6504557740277428, 0.0686704431944328, 0.1535517790277894, 0.01621089263892388, 0.06867044319443279 },
-            { -0.05555555555555558, 0.1242259987499882, -0.1242259987499882, -0.05555555555555557, 0.0686704431944328, 0.1535517790277894, 0.6504557740277429, 0.01621089263892396, 0.06867044319443268, 0.1535517790277895 } } };
+    alignas(32) static const double FE20_C0_D001_Q15[1][15][7] =
+        { { { 0.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0 },
+            { -0.3333333333333324, 0.3333333333333293, 1.333333333333334, 0.0, 0.0, -1.333333333333334, 0.0 },
+            { 1.0, 0.3333333333333297, 1.333333333333335, 1.33333333333334, -1.333333333333334, -1.333333333333333, -1.333333333333333 },
+            { -0.3333333333333325, -1.0, 1.333333333333337, 1.333333333333339, 1.333333333333333, -1.333333333333334, -1.333333333333334 },
+            { -0.3333333333333332, 0.3333333333333295, 0.0, 1.33333333333334, 0.0, 0.0, -1.333333333333335 },
+            { 0.636363636363638, -0.636363636363641, 0.3636363636363668, 2.909090909090918, 0.0, -0.3636363636363635, -2.90909090909091 },
+            { -1.90909090909091, -0.6363636363636409, 0.3636363636363659, 0.363636363636368, 2.545454545454548, -0.3636363636363641, -0.3636363636363636 },
+            { 0.6363636363636376, 1.909090909090907, 0.3636363636363602, 0.3636363636363713, -2.545454545454548, -0.3636363636363617, -0.3636363636363649 },
+            { 0.636363636363637, -0.6363636363636407, 2.909090909090912, 0.3636363636363678, 0.0, -2.90909090909091, -0.3636363636363636 },
+            { -0.7337993857053422, -0.7337993857053478, 0.2662006142946601, 1.733799385705349, 1.467598771410686, -0.2662006142946576, -1.733799385705344 },
+            { -0.733799385705342, -0.7337993857053482, 1.733799385705347, 0.2662006142946639, 1.467598771410685, -1.733799385705344, -0.2662006142946572 },
+            { -0.7337993857053422, 0.7337993857053395, 0.2662006142946563, 0.2662006142946642, 0.0, -0.2662006142946566, -0.2662006142946582 },
+            { 0.733799385705344, 0.7337993857053395, 1.733799385705344, 0.2662006142946635, -1.467598771410687, -1.733799385705343, -0.2662006142946569 },
+            { 0.7337993857053432, 0.7337993857053395, 0.2662006142946564, 1.733799385705351, -1.467598771410687, -0.2662006142946562, -1.733799385705343 },
+            { 0.7337993857053438, -0.7337993857053478, 1.733799385705347, 1.733799385705349, 0.0, -1.733799385705343, -1.733799385705343 } } };
+    alignas(32) static const double FE20_C0_D010_Q15[1][15][7] =
+        { { { 0.0, 0.0, 1.0, 1.0, -1.0, 0.0, -1.0 },
+            { -0.3333333333333325, 0.3333333333333304, 1.333333333333335, 0.0, -1.333333333333334, 0.0, 0.0 },
+            { 1.0, 0.3333333333333307, 1.333333333333335, 1.333333333333338, -1.333333333333334, -1.333333333333334, -1.333333333333333 },
+            { -0.3333333333333319, 0.3333333333333298, 0.0, 1.333333333333341, 0.0, 0.0, -1.333333333333335 },
+            { -0.3333333333333319, -1.0, 1.333333333333335, 1.333333333333337, -1.333333333333334, 1.333333333333332, -1.333333333333334 },
+            { 0.6363636363636382, -0.6363636363636392, 0.3636363636363644, 2.909090909090917, -0.3636363636363642, 0.0, -2.909090909090911 },
+            { -1.909090909090909, -0.6363636363636395, 0.3636363636363644, 0.3636363636363693, -0.3636363636363641, 2.545454545454546, -0.3636363636363641 },
+            { 0.6363636363636385, -0.6363636363636381, 2.909090909090911, 0.3636363636363666, -2.909090909090912, 0.0, -0.3636363636363641 },
+            { 0.6363636363636379, 1.909090909090906, 0.3636363636363645, 0.3636363636363704, -0.363636363636364, -2.545454545454546, -0.3636363636363651 },
+            { -0.7337993857053411, -0.7337993857053458, 0.266200614294658, 1.73379938570535, -0.2662006142946577, 1.467598771410684, -1.733799385705344 },
+            { -0.7337993857053419, 0.7337993857053394, 0.2662006142946585, 0.2662006142946653, -0.266200614294658, 0.0, -0.2662006142946587 },
+            { -0.733799385705342, -0.7337993857053448, 1.733799385705344, 0.2662006142946605, -1.733799385705344, 1.467598771410686, -0.266200614294658 },
+            { 0.733799385705344, 0.7337993857053402, 1.733799385705344, 0.2662006142946626, -1.733799385705344, -1.467598771410686, -0.2662006142946579 },
+            { 0.733799385705344, -0.7337993857053449, 1.733799385705344, 1.733799385705347, -1.733799385705344, 0.0, -1.733799385705343 },
+            { 0.7337993857053443, 0.7337993857053398, 0.2662006142946577, 1.73379938570535, -0.2662006142946574, -1.467598771410688, -1.733799385705344 } } };
+    alignas(32) static const double FE20_C0_D100_Q15[1][15][7] =
+        { { { 0.0, 0.0, 1.0, 1.0, -1.0, -1.0, 0.0 },
+            { -0.3333333333333317, -1.0, 1.333333333333334, 1.333333333333334, -1.333333333333334, -1.333333333333335, 1.333333333333332 },
+            { 1.0, 0.3333333333333319, 1.333333333333334, 1.333333333333334, -1.333333333333334, -1.333333333333335, -1.333333333333333 },
+            { -0.3333333333333322, 0.3333333333333327, 0.0, 1.333333333333334, 0.0, -1.333333333333335, 0.0 },
+            { -0.3333333333333336, 0.3333333333333319, 1.333333333333334, 0.0, -1.333333333333334, 0.0, 0.0 },
+            { 0.636363636363638, 1.90909090909091, 0.3636363636363635, 0.3636363636363639, -0.3636363636363637, -0.363636363636364, -2.545454545454548 },
+            { -1.909090909090907, -0.6363636363636357, 0.3636363636363638, 0.3636363636363639, -0.3636363636363639, -0.3636363636363641, 2.545454545454543 },
+            { 0.6363636363636382, -0.6363636363636368, 2.909090909090911, 0.3636363636363634, -2.909090909090912, -0.3636363636363636, 0.0 },
+            { 0.6363636363636374, -0.6363636363636389, 0.3636363636363635, 2.909090909090911, -0.3636363636363636, -2.909090909090912, 0.0 },
+            { -0.7337993857053422, 0.7337993857053424, 0.2662006142946572, 0.2662006142946577, -0.2662006142946573, -0.2662006142946578, 0.0 },
+            { -0.7337993857053421, -0.733799385705344, 0.2662006142946577, 1.733799385705345, -0.2662006142946578, -1.733799385705346, 1.467598771410686 },
+            { -0.7337993857053413, -0.733799385705343, 1.733799385705344, 0.2662006142946576, -1.733799385705344, -0.2662006142946577, 1.467598771410684 },
+            { 0.7337993857053446, -0.7337993857053438, 1.733799385705344, 1.733799385705344, -1.733799385705344, -1.733799385705344, 0.0 },
+            { 0.7337993857053426, 0.7337993857053411, 1.733799385705344, 0.266200614294657, -1.733799385705344, -0.2662006142946571, -1.467598771410684 },
+            { 0.733799385705345, 0.7337993857053422, 0.2662006142946568, 1.733799385705344, -0.2662006142946569, -1.733799385705345, -1.467598771410687 } } };
+    alignas(32) static const double FE20_C0_Q15[1][15][10] =
+        { { { -0.1249999999999999, -0.1249999999999999, -0.125, -0.1250000000000001, 0.2500000000000001, 0.2500000000000001, 0.25, 0.25, 0.2499999999999999, 0.25 },
+            { -0.111111111111111, 0.0, -0.1111111111111111, -0.1111111111111112, 0.4444444444444445, 0.0, 0.0, 0.4444444444444445, 0.4444444444444444, 0.0 },
+            { 0.0, -0.1111111111111111, -0.1111111111111111, -0.1111111111111112, 0.4444444444444445, 0.4444444444444445, 0.4444444444444444, 0.0, 0.0, 0.0 },
+            { -0.111111111111111, -0.111111111111111, -0.1111111111111111, 0.0, 0.0, 0.0, 0.4444444444444445, 0.0, 0.4444444444444443, 0.4444444444444444 },
+            { -0.111111111111111, -0.1111111111111111, 0.0, -0.1111111111111112, 0.0, 0.4444444444444445, 0.0, 0.4444444444444445, 0.0, 0.4444444444444444 },
+            { -0.07438016528925624, 0.3305785123966942, -0.07438016528925619, -0.0743801652892562, 0.03305785123966945, 0.2644628099173554, 0.2644628099173553, 0.03305785123966939, 0.03305785123966932, 0.2644628099173555 },
+            { 0.3305785123966944, -0.07438016528925609, -0.0743801652892562, -0.0743801652892562, 0.03305785123966938, 0.03305785123966942, 0.03305785123966942, 0.2644628099173554, 0.2644628099173553, 0.2644628099173552 },
+            { -0.07438016528925616, -0.07438016528925609, -0.07438016528925623, 0.3305785123966941, 0.2644628099173554, 0.2644628099173553, 0.03305785123966941, 0.2644628099173554, 0.03305785123966935, 0.03305785123966939 },
+            { -0.07438016528925616, -0.0743801652892561, 0.3305785123966941, -0.07438016528925617, 0.2644628099173552, 0.03305785123966933, 0.2644628099173553, 0.03305785123966944, 0.2644628099173553, 0.03305785123966939 },
+            { -0.0576923076923076, -0.05769230769230761, -0.05769230769230765, -0.0576923076923077, 0.01771569176271326, 0.1153846153846154, 0.1153846153846153, 0.1153846153846154, 0.1153846153846153, 0.7515150774680561 },
+            { -0.05769230769230756, -0.0576923076923076, -0.05769230769230766, -0.0576923076923077, 0.1153846153846154, 0.01771569176271323, 0.1153846153846154, 0.1153846153846154, 0.7515150774680559, 0.1153846153846153 },
+            { -0.0576923076923076, -0.05769230769230758, -0.05769230769230768, -0.05769230769230775, 0.1153846153846153, 0.1153846153846155, 0.01771569176271323, 0.7515150774680561, 0.1153846153846153, 0.1153846153846153 },
+            { -0.05769230769230763, -0.05769230769230765, -0.0576923076923077, -0.05769230769230775, 0.7515150774680561, 0.1153846153846154, 0.1153846153846154, 0.1153846153846154, 0.1153846153846153, 0.01771569176271325 },
+            { -0.05769230769230764, -0.05769230769230762, -0.05769230769230771, -0.05769230769230775, 0.1153846153846155, 0.7515150774680561, 0.1153846153846154, 0.1153846153846153, 0.01771569176271313, 0.1153846153846153 },
+            { -0.05769230769230761, -0.05769230769230756, -0.05769230769230758, -0.0576923076923077, 0.1153846153846154, 0.1153846153846154, 0.751515077468056, 0.01771569176271322, 0.1153846153846151, 0.1153846153846153 } } };
+    alignas(32) static const double FE22_C3_D001_Q15[1][1][2] = { { { -1.0, 1.0 } } };
+    alignas(32) static const double FE22_C3_Q15[1][15][4] =
+        { { { 0.2500000000000001, 0.25, 0.25, 0.25 },
+            { 0.3333333333333334, 0.0, 0.3333333333333333, 0.3333333333333333 },
+            { 0.0, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333 },
+            { 0.3333333333333334, 0.3333333333333333, 0.3333333333333334, 0.0 },
+            { 0.3333333333333334, 0.3333333333333333, 0.0, 0.3333333333333333 },
+            { 0.09090909090909104, 0.7272727272727272, 0.09090909090909088, 0.09090909090909091 },
+            { 0.7272727272727273, 0.09090909090909084, 0.09090909090909088, 0.09090909090909091 },
+            { 0.09090909090909094, 0.09090909090909088, 0.09090909090909086, 0.7272727272727271 },
+            { 0.09090909090909097, 0.09090909090909083, 0.727272727272727, 0.09090909090909086 },
+            { 0.4334498464263358, 0.4334498464263357, 0.06655015357366431, 0.06655015357366428 },
+            { 0.4334498464263358, 0.06655015357366426, 0.4334498464263357, 0.06655015357366428 },
+            { 0.4334498464263358, 0.06655015357366431, 0.06655015357366426, 0.4334498464263357 },
+            { 0.06655015357366435, 0.06655015357366428, 0.4334498464263357, 0.4334498464263357 },
+            { 0.06655015357366438, 0.4334498464263357, 0.06655015357366426, 0.4334498464263357 },
+            { 0.0665501535736643, 0.4334498464263357, 0.4334498464263357, 0.06655015357366428 } } };
     alignas(32) static const double PI0[1][10][10] =
-        { { { 0.002380952380952385, 0.0003968253968253954, 0.000396825396825396, 0.0003968253968253966, -0.00238095238095238, -0.002380952380952381, -0.002380952380952381, -0.001587301587301585, -0.001587301587301584, -0.001587301587301585 },
-            { 0.0003968253968253954, 0.002380952380952382, 0.0003968253968253962, 0.000396825396825397, -0.002380952380952379, -0.001587301587301586, -0.001587301587301586, -0.002380952380952378, -0.002380952380952379, -0.001587301587301584 },
-            { 0.000396825396825396, 0.0003968253968253962, 0.002380952380952383, 0.0003968253968253969, -0.001587301587301588, -0.002380952380952382, -0.001587301587301586, -0.002380952380952381, -0.001587301587301585, -0.002380952380952381 },
-            { 0.0003968253968253966, 0.000396825396825397, 0.0003968253968253969, 0.002380952380952385, -0.001587301587301589, -0.00158730158730159, -0.002380952380952382, -0.001587301587301588, -0.002380952380952382, -0.002380952380952382 },
-            { -0.00238095238095238, -0.002380952380952379, -0.001587301587301588, -0.001587301587301589, 0.0126984126984127, 0.006349206349206356, 0.006349206349206354, 0.006349206349206351, 0.006349206349206347, 0.003174603174603176 },
-            { -0.002380952380952381, -0.001587301587301586, -0.002380952380952382, -0.00158730158730159, 0.006349206349206356, 0.0126984126984127, 0.006349206349206353, 0.006349206349206349, 0.003174603174603173, 0.006349206349206352 },
-            { -0.002380952380952381, -0.001587301587301586, -0.001587301587301586, -0.002380952380952382, 0.006349206349206354, 0.006349206349206353, 0.01269841269841271, 0.003174603174603176, 0.006349206349206347, 0.006349206349206352 },
-            { -0.001587301587301585, -0.002380952380952378, -0.002380952380952381, -0.001587301587301588, 0.006349206349206351, 0.006349206349206349, 0.003174603174603176, 0.0126984126984127, 0.006349206349206348, 0.006349206349206349 },
-            { -0.001587301587301584, -0.002380952380952379, -0.001587301587301585, -0.002380952380952382, 0.006349206349206347, 0.003174603174603173, 0.006349206349206347, 0.006349206349206348, 0.0126984126984127, 0.006349206349206346 },
-            { -0.001587301587301585, -0.001587301587301584, -0.002380952380952381, -0.002380952380952382, 0.003174603174603176, 0.006349206349206352, 0.006349206349206352, 0.006349206349206349, 0.006349206349206346, 0.01269841269841271 } } };
+        { { { 0.002380952380952379, 0.0003968253968253951, 0.0003968253968253961, 0.0003968253968253968, -0.002380952380952379, -0.002380952380952379, -0.002380952380952379, -0.001587301587301584, -0.001587301587301583, -0.001587301587301585 },
+            { 0.0003968253968253951, 0.002380952380952377, 0.0003968253968253962, 0.000396825396825397, -0.002380952380952379, -0.001587301587301585, -0.001587301587301585, -0.002380952380952378, -0.002380952380952377, -0.001587301587301584 },
+            { 0.0003968253968253961, 0.0003968253968253962, 0.002380952380952379, 0.0003968253968253973, -0.001587301587301588, -0.002380952380952381, -0.001587301587301586, -0.002380952380952381, -0.001587301587301586, -0.002380952380952379 },
+            { 0.0003968253968253968, 0.000396825396825397, 0.0003968253968253973, 0.002380952380952381, -0.00158730158730159, -0.00158730158730159, -0.002380952380952381, -0.001587301587301589, -0.002380952380952381, -0.002380952380952381 },
+            { -0.002380952380952379, -0.002380952380952379, -0.001587301587301588, -0.00158730158730159, 0.01269841269841269, 0.00634920634920635, 0.006349206349206347, 0.006349206349206347, 0.006349206349206345, 0.003174603174603175 },
+            { -0.002380952380952379, -0.001587301587301585, -0.002380952380952381, -0.00158730158730159, 0.00634920634920635, 0.01269841269841269, 0.006349206349206347, 0.00634920634920635, 0.003174603174603172, 0.006349206349206347 },
+            { -0.002380952380952379, -0.001587301587301585, -0.001587301587301586, -0.002380952380952381, 0.006349206349206347, 0.006349206349206347, 0.01269841269841269, 0.003174603174603174, 0.006349206349206343, 0.006349206349206347 },
+            { -0.001587301587301584, -0.002380952380952378, -0.002380952380952381, -0.001587301587301589, 0.006349206349206347, 0.00634920634920635, 0.003174603174603174, 0.01269841269841269, 0.006349206349206347, 0.006349206349206347 },
+            { -0.001587301587301583, -0.002380952380952377, -0.001587301587301586, -0.002380952380952381, 0.006349206349206345, 0.003174603174603172, 0.006349206349206343, 0.006349206349206347, 0.01269841269841268, 0.006349206349206343 },
+            { -0.001587301587301585, -0.001587301587301584, -0.002380952380952379, -0.002380952380952381, 0.003174603174603175, 0.006349206349206347, 0.006349206349206347, 0.006349206349206347, 0.006349206349206343, 0.01269841269841269 } } };
     // Unstructured piecewise computations
-    const double J_c0 = coordinate_dofs[0] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[3] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c4 = coordinate_dofs[1] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[7] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c8 = coordinate_dofs[2] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[11] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c5 = coordinate_dofs[1] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[10] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c7 = coordinate_dofs[2] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[8] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c1 = coordinate_dofs[0] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[6] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c6 = coordinate_dofs[2] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[5] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c3 = coordinate_dofs[1] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[4] * FE18_C0_D001_Q24[0][0][1];
-    const double J_c2 = coordinate_dofs[0] * FE18_C0_D001_Q24[0][0][0] + coordinate_dofs[9] * FE18_C0_D001_Q24[0][0][1];
-    alignas(32) double sp[16];
+    const double J_c4 = coordinate_dofs[1] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[7] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c8 = coordinate_dofs[2] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[11] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c5 = coordinate_dofs[1] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[10] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c7 = coordinate_dofs[2] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[8] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c0 = coordinate_dofs[0] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[3] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c1 = coordinate_dofs[0] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[6] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c6 = coordinate_dofs[2] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[5] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c3 = coordinate_dofs[1] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[4] * FE22_C3_D001_Q15[0][0][1];
+    const double J_c2 = coordinate_dofs[0] * FE22_C3_D001_Q15[0][0][0] + coordinate_dofs[9] * FE22_C3_D001_Q15[0][0][1];
+    alignas(32) double sp[45];
     sp[0] = J_c4 * J_c8;
     sp[1] = J_c5 * J_c7;
     sp[2] = sp[0] + -1 * sp[1];
@@ -14324,424 +21896,461 @@ return enabled;
     sp[11] = sp[9] + -1 * sp[10];
     sp[12] = J_c2 * sp[11];
     sp[13] = sp[8] + sp[12];
-    sp[14] = std::abs(sp[13]);
-    sp[15] = 1 / w[0][0] * sp[14];
-    alignas(32) double BF0[10][10] = {};
-    alignas(32) double BF1[10][10] = {};
-    alignas(32) double BF2[10][10] = {};
-    alignas(32) double BF3[10][10] = {};
-    alignas(32) double BF4[10][10] = {};
-    alignas(32) double BF5[10][10] = {};
-    for (int iq = 0; iq < 24; ++iq)
+    sp[14] = sp[2] / sp[13];
+    sp[15] = J_c3 * (-1 * J_c8);
+    sp[16] = sp[4] + sp[15];
+    sp[17] = sp[16] / sp[13];
+    sp[18] = sp[11] / sp[13];
+    sp[19] = J_c2 * J_c7;
+    sp[20] = J_c8 * (-1 * J_c1);
+    sp[21] = sp[19] + sp[20];
+    sp[22] = sp[21] / sp[13];
+    sp[23] = J_c0 * J_c8;
+    sp[24] = J_c6 * (-1 * J_c2);
+    sp[25] = sp[23] + sp[24];
+    sp[26] = sp[25] / sp[13];
+    sp[27] = J_c1 * J_c6;
+    sp[28] = J_c0 * J_c7;
+    sp[29] = sp[27] + -1 * sp[28];
+    sp[30] = sp[29] / sp[13];
+    sp[31] = J_c1 * J_c5;
+    sp[32] = J_c2 * J_c4;
+    sp[33] = sp[31] + -1 * sp[32];
+    sp[34] = sp[33] / sp[13];
+    sp[35] = J_c2 * J_c3;
+    sp[36] = J_c0 * J_c5;
+    sp[37] = sp[35] + -1 * sp[36];
+    sp[38] = sp[37] / sp[13];
+    sp[39] = J_c0 * J_c4;
+    sp[40] = J_c1 * J_c3;
+    sp[41] = sp[39] + -1 * sp[40];
+    sp[42] = sp[41] / sp[13];
+    sp[43] = std::abs(sp[13]);
+    sp[44] = 1 / w[0][0] * sp[43];
+    alignas(32) double TP0[4] = {};
+    alignas(32) double BF0[4][4] = {};
+    alignas(32) double TP1[4] = {};
+    alignas(32) double TP2[4] = {};
+    for (int iq = 0; iq < 15; ++iq)
     {
-        // Quadrature loop body setup (num_points=24)
-        // Unstructured varying computations for num_points=24
+        // Quadrature loop body setup (num_points=15)
+        // Unstructured varying computations for num_points=15
+        const double w1_d0_c0 = w[1][0] * FE20_C0_D100_Q15[0][iq][0] + w[1][1] * FE20_C0_D100_Q15[0][iq][1] + w[1][5] * FE20_C0_D100_Q15[0][iq][2] + w[1][6] * FE20_C0_D100_Q15[0][iq][3] + w[1][7] * FE20_C0_D100_Q15[0][iq][4] + w[1][8] * FE20_C0_D100_Q15[0][iq][5] + w[1][9] * FE20_C0_D100_Q15[0][iq][6];
+        const double w1_d1_c0 = w[1][0] * FE20_C0_D010_Q15[0][iq][0] + w[1][2] * FE20_C0_D010_Q15[0][iq][1] + w[1][4] * FE20_C0_D010_Q15[0][iq][2] + w[1][6] * FE20_C0_D010_Q15[0][iq][3] + w[1][7] * FE20_C0_D010_Q15[0][iq][4] + w[1][8] * FE20_C0_D010_Q15[0][iq][5] + w[1][9] * FE20_C0_D010_Q15[0][iq][6];
+        const double w1_d2_c0 = w[1][0] * FE20_C0_D001_Q15[0][iq][0] + w[1][3] * FE20_C0_D001_Q15[0][iq][1] + w[1][4] * FE20_C0_D001_Q15[0][iq][2] + w[1][5] * FE20_C0_D001_Q15[0][iq][3] + w[1][7] * FE20_C0_D001_Q15[0][iq][4] + w[1][8] * FE20_C0_D001_Q15[0][iq][5] + w[1][9] * FE20_C0_D001_Q15[0][iq][6];
         double w1_c0 = 0.0;
         for (int ic = 0; ic < 10; ++ic)
-            w1_c0 += w[1][ic] * FE8_C0_Q24[0][iq][ic];
+            w1_c0 += w[1][ic] * FE20_C0_Q15[0][iq][ic];
+        const double w1_d0_c1 = w[1][10] * FE20_C0_D100_Q15[0][iq][0] + w[1][11] * FE20_C0_D100_Q15[0][iq][1] + w[1][15] * FE20_C0_D100_Q15[0][iq][2] + w[1][16] * FE20_C0_D100_Q15[0][iq][3] + w[1][17] * FE20_C0_D100_Q15[0][iq][4] + w[1][18] * FE20_C0_D100_Q15[0][iq][5] + w[1][19] * FE20_C0_D100_Q15[0][iq][6];
+        const double w1_d1_c1 = w[1][10] * FE20_C0_D010_Q15[0][iq][0] + w[1][12] * FE20_C0_D010_Q15[0][iq][1] + w[1][14] * FE20_C0_D010_Q15[0][iq][2] + w[1][16] * FE20_C0_D010_Q15[0][iq][3] + w[1][17] * FE20_C0_D010_Q15[0][iq][4] + w[1][18] * FE20_C0_D010_Q15[0][iq][5] + w[1][19] * FE20_C0_D010_Q15[0][iq][6];
+        const double w1_d2_c1 = w[1][10] * FE20_C0_D001_Q15[0][iq][0] + w[1][13] * FE20_C0_D001_Q15[0][iq][1] + w[1][14] * FE20_C0_D001_Q15[0][iq][2] + w[1][15] * FE20_C0_D001_Q15[0][iq][3] + w[1][17] * FE20_C0_D001_Q15[0][iq][4] + w[1][18] * FE20_C0_D001_Q15[0][iq][5] + w[1][19] * FE20_C0_D001_Q15[0][iq][6];
         double w1_c1 = 0.0;
         for (int ic = 0; ic < 10; ++ic)
-            w1_c1 += w[1][ic + 10] * FE8_C0_Q24[0][iq][ic];
+            w1_c1 += w[1][ic + 10] * FE20_C0_Q15[0][iq][ic];
+        const double w1_d0_c2 = w[1][20] * FE20_C0_D100_Q15[0][iq][0] + w[1][21] * FE20_C0_D100_Q15[0][iq][1] + w[1][25] * FE20_C0_D100_Q15[0][iq][2] + w[1][26] * FE20_C0_D100_Q15[0][iq][3] + w[1][27] * FE20_C0_D100_Q15[0][iq][4] + w[1][28] * FE20_C0_D100_Q15[0][iq][5] + w[1][29] * FE20_C0_D100_Q15[0][iq][6];
+        const double w1_d1_c2 = w[1][20] * FE20_C0_D010_Q15[0][iq][0] + w[1][22] * FE20_C0_D010_Q15[0][iq][1] + w[1][24] * FE20_C0_D010_Q15[0][iq][2] + w[1][26] * FE20_C0_D010_Q15[0][iq][3] + w[1][27] * FE20_C0_D010_Q15[0][iq][4] + w[1][28] * FE20_C0_D010_Q15[0][iq][5] + w[1][29] * FE20_C0_D010_Q15[0][iq][6];
+        const double w1_d2_c2 = w[1][20] * FE20_C0_D001_Q15[0][iq][0] + w[1][23] * FE20_C0_D001_Q15[0][iq][1] + w[1][24] * FE20_C0_D001_Q15[0][iq][2] + w[1][25] * FE20_C0_D001_Q15[0][iq][3] + w[1][27] * FE20_C0_D001_Q15[0][iq][4] + w[1][28] * FE20_C0_D001_Q15[0][iq][5] + w[1][29] * FE20_C0_D001_Q15[0][iq][6];
         double w1_c2 = 0.0;
         for (int ic = 0; ic < 10; ++ic)
-            w1_c2 += w[1][ic + 20] * FE8_C0_Q24[0][iq][ic];
-        alignas(32) double sv24[6];
-        sv24[0] = -1 * (10000000000.0 * w1_c0) * sp[14];
-        sv24[1] = -1 * (10000000000.0 * (-1.0 * w1_c2)) * sp[14];
-        sv24[2] = -1 * (10000000000.0 * (-1.0 * w1_c1)) * sp[14];
-        sv24[3] = -1 * (10000000000.0 * (-1.0 * w1_c0)) * sp[14];
-        sv24[4] = -1 * (10000000000.0 * w1_c2) * sp[14];
-        sv24[5] = -1 * (10000000000.0 * w1_c1) * sp[14];
-        const double fw0 = sv24[4] * weights24[iq];
-        alignas(32) double TF0[10];
-        for (int i = 0; i < 10; ++i)
-            TF0[i] = fw0 * FE8_C0_Q24[0][iq][i];
-        for (int i = 0; i < 10; ++i)
-            for (int j = 0; j < 10; ++j)
-                BF0[i][j] += TF0[i] * FE8_C0_Q24[0][iq][j];
-        const double fw1 = sv24[2] * weights24[iq];
-        alignas(32) double TF1[10];
-        for (int i = 0; i < 10; ++i)
-            TF1[i] = fw1 * FE8_C0_Q24[0][iq][i];
-        for (int i = 0; i < 10; ++i)
-            for (int j = 0; j < 10; ++j)
-                BF1[i][j] += TF1[i] * FE8_C0_Q24[0][iq][j];
-        const double fw2 = sv24[1] * weights24[iq];
-        alignas(32) double TF2[10];
-        for (int i = 0; i < 10; ++i)
-            TF2[i] = fw2 * FE8_C0_Q24[0][iq][i];
-        for (int i = 0; i < 10; ++i)
-            for (int j = 0; j < 10; ++j)
-                BF2[i][j] += TF2[i] * FE8_C0_Q24[0][iq][j];
-        const double fw3 = sv24[0] * weights24[iq];
-        alignas(32) double TF3[10];
-        for (int i = 0; i < 10; ++i)
-            TF3[i] = fw3 * FE8_C0_Q24[0][iq][i];
-        for (int i = 0; i < 10; ++i)
-            for (int j = 0; j < 10; ++j)
-                BF3[i][j] += TF3[i] * FE8_C0_Q24[0][iq][j];
-        const double fw4 = sv24[5] * weights24[iq];
-        alignas(32) double TF4[10];
-        for (int i = 0; i < 10; ++i)
-            TF4[i] = fw4 * FE8_C0_Q24[0][iq][i];
-        for (int i = 0; i < 10; ++i)
-            for (int j = 0; j < 10; ++j)
-                BF4[i][j] += TF4[i] * FE8_C0_Q24[0][iq][j];
-        const double fw5 = sv24[3] * weights24[iq];
-        alignas(32) double TF5[10];
-        for (int i = 0; i < 10; ++i)
-            TF5[i] = fw5 * FE8_C0_Q24[0][iq][i];
-        for (int i = 0; i < 10; ++i)
-            for (int j = 0; j < 10; ++j)
-                BF5[i][j] += TF5[i] * FE8_C0_Q24[0][iq][j];
+            w1_c2 += w[1][ic + 20] * FE20_C0_Q15[0][iq][ic];
+        alignas(32) double sv15[36];
+        sv15[0] = w1_d0_c0 * sp[14];
+        sv15[1] = w1_d1_c0 * sp[17];
+        sv15[2] = sv15[0] + sv15[1];
+        sv15[3] = w1_d2_c0 * sp[18];
+        sv15[4] = sv15[2] + sv15[3];
+        sv15[5] = w1_c0 * sp[14];
+        sv15[6] = w1_c0 * sp[17];
+        sv15[7] = w1_c0 * sp[18];
+        sv15[8] = w1_d0_c1 * sp[22];
+        sv15[9] = w1_d1_c1 * sp[26];
+        sv15[10] = sv15[8] + sv15[9];
+        sv15[11] = w1_d2_c1 * sp[30];
+        sv15[12] = sv15[10] + sv15[11];
+        sv15[13] = w1_c1 * sp[22];
+        sv15[14] = w1_c1 * sp[26];
+        sv15[15] = w1_c1 * sp[30];
+        sv15[16] = sv15[4] + sv15[12];
+        sv15[17] = sv15[13] + sv15[5];
+        sv15[18] = sv15[14] + sv15[6];
+        sv15[19] = sv15[7] + sv15[15];
+        sv15[20] = w1_d0_c2 * sp[34];
+        sv15[21] = w1_d1_c2 * sp[38];
+        sv15[22] = sv15[20] + sv15[21];
+        sv15[23] = w1_d2_c2 * sp[42];
+        sv15[24] = sv15[22] + sv15[23];
+        sv15[25] = w1_c2 * sp[34];
+        sv15[26] = w1_c2 * sp[38];
+        sv15[27] = w1_c2 * sp[42];
+        sv15[28] = sv15[16] + sv15[24];
+        sv15[29] = sv15[17] + sv15[25];
+        sv15[30] = sv15[18] + sv15[26];
+        sv15[31] = sv15[19] + sv15[27];
+        sv15[32] = sv15[28] * sp[43];
+        sv15[33] = sv15[29] * sp[43];
+        sv15[34] = sv15[30] * sp[43];
+        sv15[35] = sv15[31] * sp[43];
+        const double fw0 = sv15[33] * weights15[iq];
+        for (int i = 0; i < 4; ++i)
+            TP0[i] += fw0 * FE22_C3_Q15[0][iq][i];
+        const double fw1 = sv15[32] * weights15[iq];
+        alignas(32) double TF0[4];
+        for (int i = 0; i < 4; ++i)
+            TF0[i] = fw1 * FE22_C3_Q15[0][iq][i];
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                BF0[i][j] += TF0[i] * FE22_C3_Q15[0][iq][j];
+        const double fw2 = sv15[34] * weights15[iq];
+        for (int i = 0; i < 4; ++i)
+            TP1[i] += fw2 * FE22_C3_Q15[0][iq][i];
+        const double fw3 = sv15[35] * weights15[iq];
+        for (int i = 0; i < 4; ++i)
+            TP2[i] += fw3 * FE22_C3_Q15[0][iq][i];
     }
-    A[0] = sp[15] * PI0[0][0][0];
-    A[1] = sp[15] * PI0[0][0][1];
-    A[2] = sp[15] * PI0[0][0][2];
-    A[3] = sp[15] * PI0[0][0][3];
-    A[4] = sp[15] * PI0[0][0][4];
-    A[5] = sp[15] * PI0[0][0][5];
-    A[6] = sp[15] * PI0[0][0][6];
-    A[7] = sp[15] * PI0[0][0][7];
-    A[8] = sp[15] * PI0[0][0][8];
-    A[9] = sp[15] * PI0[0][0][9];
-    std::fill(A + 10, A + 30, 0.0);
-    A[30] = sp[15] * PI0[0][1][0];
-    A[31] = sp[15] * PI0[0][1][1];
-    A[32] = sp[15] * PI0[0][1][2];
-    A[33] = sp[15] * PI0[0][1][3];
-    A[34] = sp[15] * PI0[0][1][4];
-    A[35] = sp[15] * PI0[0][1][5];
-    A[36] = sp[15] * PI0[0][1][6];
-    A[37] = sp[15] * PI0[0][1][7];
-    A[38] = sp[15] * PI0[0][1][8];
-    A[39] = sp[15] * PI0[0][1][9];
-    std::fill(A + 40, A + 60, 0.0);
-    A[60] = sp[15] * PI0[0][2][0];
-    A[61] = sp[15] * PI0[0][2][1];
-    A[62] = sp[15] * PI0[0][2][2];
-    A[63] = sp[15] * PI0[0][2][3];
-    A[64] = sp[15] * PI0[0][2][4];
-    A[65] = sp[15] * PI0[0][2][5];
-    A[66] = sp[15] * PI0[0][2][6];
-    A[67] = sp[15] * PI0[0][2][7];
-    A[68] = sp[15] * PI0[0][2][8];
-    A[69] = sp[15] * PI0[0][2][9];
-    std::fill(A + 70, A + 90, 0.0);
-    A[90] = sp[15] * PI0[0][3][0];
-    A[91] = sp[15] * PI0[0][3][1];
-    A[92] = sp[15] * PI0[0][3][2];
-    A[93] = sp[15] * PI0[0][3][3];
-    A[94] = sp[15] * PI0[0][3][4];
-    A[95] = sp[15] * PI0[0][3][5];
-    A[96] = sp[15] * PI0[0][3][6];
-    A[97] = sp[15] * PI0[0][3][7];
-    A[98] = sp[15] * PI0[0][3][8];
-    A[99] = sp[15] * PI0[0][3][9];
-    std::fill(A + 100, A + 120, 0.0);
-    A[120] = sp[15] * PI0[0][4][0];
-    A[121] = sp[15] * PI0[0][4][1];
-    A[122] = sp[15] * PI0[0][4][2];
-    A[123] = sp[15] * PI0[0][4][3];
-    A[124] = sp[15] * PI0[0][4][4];
-    A[125] = sp[15] * PI0[0][4][5];
-    A[126] = sp[15] * PI0[0][4][6];
-    A[127] = sp[15] * PI0[0][4][7];
-    A[128] = sp[15] * PI0[0][4][8];
-    A[129] = sp[15] * PI0[0][4][9];
-    std::fill(A + 130, A + 150, 0.0);
-    A[150] = sp[15] * PI0[0][5][0];
-    A[151] = sp[15] * PI0[0][5][1];
-    A[152] = sp[15] * PI0[0][5][2];
-    A[153] = sp[15] * PI0[0][5][3];
-    A[154] = sp[15] * PI0[0][5][4];
-    A[155] = sp[15] * PI0[0][5][5];
-    A[156] = sp[15] * PI0[0][5][6];
-    A[157] = sp[15] * PI0[0][5][7];
-    A[158] = sp[15] * PI0[0][5][8];
-    A[159] = sp[15] * PI0[0][5][9];
-    std::fill(A + 160, A + 180, 0.0);
-    A[180] = sp[15] * PI0[0][6][0];
-    A[181] = sp[15] * PI0[0][6][1];
-    A[182] = sp[15] * PI0[0][6][2];
-    A[183] = sp[15] * PI0[0][6][3];
-    A[184] = sp[15] * PI0[0][6][4];
-    A[185] = sp[15] * PI0[0][6][5];
-    A[186] = sp[15] * PI0[0][6][6];
-    A[187] = sp[15] * PI0[0][6][7];
-    A[188] = sp[15] * PI0[0][6][8];
-    A[189] = sp[15] * PI0[0][6][9];
-    std::fill(A + 190, A + 210, 0.0);
-    A[210] = sp[15] * PI0[0][7][0];
-    A[211] = sp[15] * PI0[0][7][1];
-    A[212] = sp[15] * PI0[0][7][2];
-    A[213] = sp[15] * PI0[0][7][3];
-    A[214] = sp[15] * PI0[0][7][4];
-    A[215] = sp[15] * PI0[0][7][5];
-    A[216] = sp[15] * PI0[0][7][6];
-    A[217] = sp[15] * PI0[0][7][7];
-    A[218] = sp[15] * PI0[0][7][8];
-    A[219] = sp[15] * PI0[0][7][9];
-    std::fill(A + 220, A + 240, 0.0);
-    A[240] = sp[15] * PI0[0][8][0];
-    A[241] = sp[15] * PI0[0][8][1];
-    A[242] = sp[15] * PI0[0][8][2];
-    A[243] = sp[15] * PI0[0][8][3];
-    A[244] = sp[15] * PI0[0][8][4];
-    A[245] = sp[15] * PI0[0][8][5];
-    A[246] = sp[15] * PI0[0][8][6];
-    A[247] = sp[15] * PI0[0][8][7];
-    A[248] = sp[15] * PI0[0][8][8];
-    A[249] = sp[15] * PI0[0][8][9];
-    std::fill(A + 250, A + 270, 0.0);
-    A[270] = sp[15] * PI0[0][9][0];
-    A[271] = sp[15] * PI0[0][9][1];
-    A[272] = sp[15] * PI0[0][9][2];
-    A[273] = sp[15] * PI0[0][9][3];
-    A[274] = sp[15] * PI0[0][9][4];
-    A[275] = sp[15] * PI0[0][9][5];
-    A[276] = sp[15] * PI0[0][9][6];
-    A[277] = sp[15] * PI0[0][9][7];
-    A[278] = sp[15] * PI0[0][9][8];
-    A[279] = sp[15] * PI0[0][9][9];
-    std::fill(A + 280, A + 310, 0.0);
-    A[310] = sp[15] * PI0[0][0][0];
-    A[311] = sp[15] * PI0[0][0][1];
-    A[312] = sp[15] * PI0[0][0][2];
-    A[313] = sp[15] * PI0[0][0][3];
-    A[314] = sp[15] * PI0[0][0][4];
-    A[315] = sp[15] * PI0[0][0][5];
-    A[316] = sp[15] * PI0[0][0][6];
-    A[317] = sp[15] * PI0[0][0][7];
-    A[318] = sp[15] * PI0[0][0][8];
-    A[319] = sp[15] * PI0[0][0][9];
-    std::fill(A + 320, A + 340, 0.0);
-    A[340] = sp[15] * PI0[0][1][0];
-    A[341] = sp[15] * PI0[0][1][1];
-    A[342] = sp[15] * PI0[0][1][2];
-    A[343] = sp[15] * PI0[0][1][3];
-    A[344] = sp[15] * PI0[0][1][4];
-    A[345] = sp[15] * PI0[0][1][5];
-    A[346] = sp[15] * PI0[0][1][6];
-    A[347] = sp[15] * PI0[0][1][7];
-    A[348] = sp[15] * PI0[0][1][8];
-    A[349] = sp[15] * PI0[0][1][9];
-    std::fill(A + 350, A + 370, 0.0);
-    A[370] = sp[15] * PI0[0][2][0];
-    A[371] = sp[15] * PI0[0][2][1];
-    A[372] = sp[15] * PI0[0][2][2];
-    A[373] = sp[15] * PI0[0][2][3];
-    A[374] = sp[15] * PI0[0][2][4];
-    A[375] = sp[15] * PI0[0][2][5];
-    A[376] = sp[15] * PI0[0][2][6];
-    A[377] = sp[15] * PI0[0][2][7];
-    A[378] = sp[15] * PI0[0][2][8];
-    A[379] = sp[15] * PI0[0][2][9];
-    std::fill(A + 380, A + 400, 0.0);
-    A[400] = sp[15] * PI0[0][3][0];
-    A[401] = sp[15] * PI0[0][3][1];
-    A[402] = sp[15] * PI0[0][3][2];
-    A[403] = sp[15] * PI0[0][3][3];
-    A[404] = sp[15] * PI0[0][3][4];
-    A[405] = sp[15] * PI0[0][3][5];
-    A[406] = sp[15] * PI0[0][3][6];
-    A[407] = sp[15] * PI0[0][3][7];
-    A[408] = sp[15] * PI0[0][3][8];
-    A[409] = sp[15] * PI0[0][3][9];
-    std::fill(A + 410, A + 430, 0.0);
-    A[430] = sp[15] * PI0[0][4][0];
-    A[431] = sp[15] * PI0[0][4][1];
-    A[432] = sp[15] * PI0[0][4][2];
-    A[433] = sp[15] * PI0[0][4][3];
-    A[434] = sp[15] * PI0[0][4][4];
-    A[435] = sp[15] * PI0[0][4][5];
-    A[436] = sp[15] * PI0[0][4][6];
-    A[437] = sp[15] * PI0[0][4][7];
-    A[438] = sp[15] * PI0[0][4][8];
-    A[439] = sp[15] * PI0[0][4][9];
-    std::fill(A + 440, A + 460, 0.0);
-    A[460] = sp[15] * PI0[0][5][0];
-    A[461] = sp[15] * PI0[0][5][1];
-    A[462] = sp[15] * PI0[0][5][2];
-    A[463] = sp[15] * PI0[0][5][3];
-    A[464] = sp[15] * PI0[0][5][4];
-    A[465] = sp[15] * PI0[0][5][5];
-    A[466] = sp[15] * PI0[0][5][6];
-    A[467] = sp[15] * PI0[0][5][7];
-    A[468] = sp[15] * PI0[0][5][8];
-    A[469] = sp[15] * PI0[0][5][9];
-    std::fill(A + 470, A + 490, 0.0);
-    A[490] = sp[15] * PI0[0][6][0];
-    A[491] = sp[15] * PI0[0][6][1];
-    A[492] = sp[15] * PI0[0][6][2];
-    A[493] = sp[15] * PI0[0][6][3];
-    A[494] = sp[15] * PI0[0][6][4];
-    A[495] = sp[15] * PI0[0][6][5];
-    A[496] = sp[15] * PI0[0][6][6];
-    A[497] = sp[15] * PI0[0][6][7];
-    A[498] = sp[15] * PI0[0][6][8];
-    A[499] = sp[15] * PI0[0][6][9];
-    std::fill(A + 500, A + 520, 0.0);
-    A[520] = sp[15] * PI0[0][7][0];
-    A[521] = sp[15] * PI0[0][7][1];
-    A[522] = sp[15] * PI0[0][7][2];
-    A[523] = sp[15] * PI0[0][7][3];
-    A[524] = sp[15] * PI0[0][7][4];
-    A[525] = sp[15] * PI0[0][7][5];
-    A[526] = sp[15] * PI0[0][7][6];
-    A[527] = sp[15] * PI0[0][7][7];
-    A[528] = sp[15] * PI0[0][7][8];
-    A[529] = sp[15] * PI0[0][7][9];
-    std::fill(A + 530, A + 550, 0.0);
-    A[550] = sp[15] * PI0[0][8][0];
-    A[551] = sp[15] * PI0[0][8][1];
-    A[552] = sp[15] * PI0[0][8][2];
-    A[553] = sp[15] * PI0[0][8][3];
-    A[554] = sp[15] * PI0[0][8][4];
-    A[555] = sp[15] * PI0[0][8][5];
-    A[556] = sp[15] * PI0[0][8][6];
-    A[557] = sp[15] * PI0[0][8][7];
-    A[558] = sp[15] * PI0[0][8][8];
-    A[559] = sp[15] * PI0[0][8][9];
-    std::fill(A + 560, A + 580, 0.0);
-    A[580] = sp[15] * PI0[0][9][0];
-    A[581] = sp[15] * PI0[0][9][1];
-    A[582] = sp[15] * PI0[0][9][2];
-    A[583] = sp[15] * PI0[0][9][3];
-    A[584] = sp[15] * PI0[0][9][4];
-    A[585] = sp[15] * PI0[0][9][5];
-    A[586] = sp[15] * PI0[0][9][6];
-    A[587] = sp[15] * PI0[0][9][7];
-    A[588] = sp[15] * PI0[0][9][8];
-    A[589] = sp[15] * PI0[0][9][9];
-    std::fill(A + 590, A + 620, 0.0);
-    A[620] = sp[15] * PI0[0][0][0];
-    A[621] = sp[15] * PI0[0][0][1];
-    A[622] = sp[15] * PI0[0][0][2];
-    A[623] = sp[15] * PI0[0][0][3];
-    A[624] = sp[15] * PI0[0][0][4];
-    A[625] = sp[15] * PI0[0][0][5];
-    A[626] = sp[15] * PI0[0][0][6];
-    A[627] = sp[15] * PI0[0][0][7];
-    A[628] = sp[15] * PI0[0][0][8];
-    A[629] = sp[15] * PI0[0][0][9];
-    std::fill(A + 630, A + 650, 0.0);
-    A[650] = sp[15] * PI0[0][1][0];
-    A[651] = sp[15] * PI0[0][1][1];
-    A[652] = sp[15] * PI0[0][1][2];
-    A[653] = sp[15] * PI0[0][1][3];
-    A[654] = sp[15] * PI0[0][1][4];
-    A[655] = sp[15] * PI0[0][1][5];
-    A[656] = sp[15] * PI0[0][1][6];
-    A[657] = sp[15] * PI0[0][1][7];
-    A[658] = sp[15] * PI0[0][1][8];
-    A[659] = sp[15] * PI0[0][1][9];
-    std::fill(A + 660, A + 680, 0.0);
-    A[680] = sp[15] * PI0[0][2][0];
-    A[681] = sp[15] * PI0[0][2][1];
-    A[682] = sp[15] * PI0[0][2][2];
-    A[683] = sp[15] * PI0[0][2][3];
-    A[684] = sp[15] * PI0[0][2][4];
-    A[685] = sp[15] * PI0[0][2][5];
-    A[686] = sp[15] * PI0[0][2][6];
-    A[687] = sp[15] * PI0[0][2][7];
-    A[688] = sp[15] * PI0[0][2][8];
-    A[689] = sp[15] * PI0[0][2][9];
-    std::fill(A + 690, A + 710, 0.0);
-    A[710] = sp[15] * PI0[0][3][0];
-    A[711] = sp[15] * PI0[0][3][1];
-    A[712] = sp[15] * PI0[0][3][2];
-    A[713] = sp[15] * PI0[0][3][3];
-    A[714] = sp[15] * PI0[0][3][4];
-    A[715] = sp[15] * PI0[0][3][5];
-    A[716] = sp[15] * PI0[0][3][6];
-    A[717] = sp[15] * PI0[0][3][7];
-    A[718] = sp[15] * PI0[0][3][8];
-    A[719] = sp[15] * PI0[0][3][9];
-    std::fill(A + 720, A + 740, 0.0);
-    A[740] = sp[15] * PI0[0][4][0];
-    A[741] = sp[15] * PI0[0][4][1];
-    A[742] = sp[15] * PI0[0][4][2];
-    A[743] = sp[15] * PI0[0][4][3];
-    A[744] = sp[15] * PI0[0][4][4];
-    A[745] = sp[15] * PI0[0][4][5];
-    A[746] = sp[15] * PI0[0][4][6];
-    A[747] = sp[15] * PI0[0][4][7];
-    A[748] = sp[15] * PI0[0][4][8];
-    A[749] = sp[15] * PI0[0][4][9];
-    std::fill(A + 750, A + 770, 0.0);
-    A[770] = sp[15] * PI0[0][5][0];
-    A[771] = sp[15] * PI0[0][5][1];
-    A[772] = sp[15] * PI0[0][5][2];
-    A[773] = sp[15] * PI0[0][5][3];
-    A[774] = sp[15] * PI0[0][5][4];
-    A[775] = sp[15] * PI0[0][5][5];
-    A[776] = sp[15] * PI0[0][5][6];
-    A[777] = sp[15] * PI0[0][5][7];
-    A[778] = sp[15] * PI0[0][5][8];
-    A[779] = sp[15] * PI0[0][5][9];
-    std::fill(A + 780, A + 800, 0.0);
-    A[800] = sp[15] * PI0[0][6][0];
-    A[801] = sp[15] * PI0[0][6][1];
-    A[802] = sp[15] * PI0[0][6][2];
-    A[803] = sp[15] * PI0[0][6][3];
-    A[804] = sp[15] * PI0[0][6][4];
-    A[805] = sp[15] * PI0[0][6][5];
-    A[806] = sp[15] * PI0[0][6][6];
-    A[807] = sp[15] * PI0[0][6][7];
-    A[808] = sp[15] * PI0[0][6][8];
-    A[809] = sp[15] * PI0[0][6][9];
-    std::fill(A + 810, A + 830, 0.0);
-    A[830] = sp[15] * PI0[0][7][0];
-    A[831] = sp[15] * PI0[0][7][1];
-    A[832] = sp[15] * PI0[0][7][2];
-    A[833] = sp[15] * PI0[0][7][3];
-    A[834] = sp[15] * PI0[0][7][4];
-    A[835] = sp[15] * PI0[0][7][5];
-    A[836] = sp[15] * PI0[0][7][6];
-    A[837] = sp[15] * PI0[0][7][7];
-    A[838] = sp[15] * PI0[0][7][8];
-    A[839] = sp[15] * PI0[0][7][9];
-    std::fill(A + 840, A + 860, 0.0);
-    A[860] = sp[15] * PI0[0][8][0];
-    A[861] = sp[15] * PI0[0][8][1];
-    A[862] = sp[15] * PI0[0][8][2];
-    A[863] = sp[15] * PI0[0][8][3];
-    A[864] = sp[15] * PI0[0][8][4];
-    A[865] = sp[15] * PI0[0][8][5];
-    A[866] = sp[15] * PI0[0][8][6];
-    A[867] = sp[15] * PI0[0][8][7];
-    A[868] = sp[15] * PI0[0][8][8];
-    A[869] = sp[15] * PI0[0][8][9];
-    std::fill(A + 870, A + 890, 0.0);
-    A[890] = sp[15] * PI0[0][9][0];
-    A[891] = sp[15] * PI0[0][9][1];
-    A[892] = sp[15] * PI0[0][9][2];
-    A[893] = sp[15] * PI0[0][9][3];
-    A[894] = sp[15] * PI0[0][9][4];
-    A[895] = sp[15] * PI0[0][9][5];
-    A[896] = sp[15] * PI0[0][9][6];
-    A[897] = sp[15] * PI0[0][9][7];
-    A[898] = sp[15] * PI0[0][9][8];
-    A[899] = sp[15] * PI0[0][9][9];
-    for (int i = 0; i < 10; ++i)
-        for (int j = 0; j < 10; ++j)
-            A[30 * i + (j + 10)] += BF0[i][j];
-    for (int i = 0; i < 10; ++i)
-        for (int j = 0; j < 10; ++j)
-            A[30 * i + (j + 20)] += BF1[i][j];
-    for (int i = 0; i < 10; ++i)
-        for (int j = 0; j < 10; ++j)
-            A[30 * (i + 10) + j] += BF2[i][j];
-    for (int i = 0; i < 10; ++i)
-        for (int j = 0; j < 10; ++j)
-            A[30 * (i + 10) + (j + 20)] += BF3[i][j];
-    for (int i = 0; i < 10; ++i)
-        for (int j = 0; j < 10; ++j)
-            A[30 * (i + 20) + j] += BF4[i][j];
-    for (int i = 0; i < 10; ++i)
-        for (int j = 0; j < 10; ++j)
-            A[30 * (i + 20) + (j + 10)] += BF5[i][j];
+    A[0] = sp[44] * PI0[0][0][0];
+    A[1] = sp[44] * PI0[0][0][1];
+    A[2] = sp[44] * PI0[0][0][2];
+    A[3] = sp[44] * PI0[0][0][3];
+    A[4] = sp[44] * PI0[0][0][4];
+    A[5] = sp[44] * PI0[0][0][5];
+    A[6] = sp[44] * PI0[0][0][6];
+    A[7] = sp[44] * PI0[0][0][7];
+    A[8] = sp[44] * PI0[0][0][8];
+    A[9] = sp[44] * PI0[0][0][9];
+    std::fill(A + 10, A + 34, 0.0);
+    A[34] = sp[44] * PI0[0][1][0];
+    A[35] = sp[44] * PI0[0][1][1];
+    A[36] = sp[44] * PI0[0][1][2];
+    A[37] = sp[44] * PI0[0][1][3];
+    A[38] = sp[44] * PI0[0][1][4];
+    A[39] = sp[44] * PI0[0][1][5];
+    A[40] = sp[44] * PI0[0][1][6];
+    A[41] = sp[44] * PI0[0][1][7];
+    A[42] = sp[44] * PI0[0][1][8];
+    A[43] = sp[44] * PI0[0][1][9];
+    std::fill(A + 44, A + 68, 0.0);
+    A[68] = sp[44] * PI0[0][2][0];
+    A[69] = sp[44] * PI0[0][2][1];
+    A[70] = sp[44] * PI0[0][2][2];
+    A[71] = sp[44] * PI0[0][2][3];
+    A[72] = sp[44] * PI0[0][2][4];
+    A[73] = sp[44] * PI0[0][2][5];
+    A[74] = sp[44] * PI0[0][2][6];
+    A[75] = sp[44] * PI0[0][2][7];
+    A[76] = sp[44] * PI0[0][2][8];
+    A[77] = sp[44] * PI0[0][2][9];
+    std::fill(A + 78, A + 102, 0.0);
+    A[102] = sp[44] * PI0[0][3][0];
+    A[103] = sp[44] * PI0[0][3][1];
+    A[104] = sp[44] * PI0[0][3][2];
+    A[105] = sp[44] * PI0[0][3][3];
+    A[106] = sp[44] * PI0[0][3][4];
+    A[107] = sp[44] * PI0[0][3][5];
+    A[108] = sp[44] * PI0[0][3][6];
+    A[109] = sp[44] * PI0[0][3][7];
+    A[110] = sp[44] * PI0[0][3][8];
+    A[111] = sp[44] * PI0[0][3][9];
+    std::fill(A + 112, A + 136, 0.0);
+    A[136] = sp[44] * PI0[0][4][0];
+    A[137] = sp[44] * PI0[0][4][1];
+    A[138] = sp[44] * PI0[0][4][2];
+    A[139] = sp[44] * PI0[0][4][3];
+    A[140] = sp[44] * PI0[0][4][4];
+    A[141] = sp[44] * PI0[0][4][5];
+    A[142] = sp[44] * PI0[0][4][6];
+    A[143] = sp[44] * PI0[0][4][7];
+    A[144] = sp[44] * PI0[0][4][8];
+    A[145] = sp[44] * PI0[0][4][9];
+    std::fill(A + 146, A + 170, 0.0);
+    A[170] = sp[44] * PI0[0][5][0];
+    A[171] = sp[44] * PI0[0][5][1];
+    A[172] = sp[44] * PI0[0][5][2];
+    A[173] = sp[44] * PI0[0][5][3];
+    A[174] = sp[44] * PI0[0][5][4];
+    A[175] = sp[44] * PI0[0][5][5];
+    A[176] = sp[44] * PI0[0][5][6];
+    A[177] = sp[44] * PI0[0][5][7];
+    A[178] = sp[44] * PI0[0][5][8];
+    A[179] = sp[44] * PI0[0][5][9];
+    std::fill(A + 180, A + 204, 0.0);
+    A[204] = sp[44] * PI0[0][6][0];
+    A[205] = sp[44] * PI0[0][6][1];
+    A[206] = sp[44] * PI0[0][6][2];
+    A[207] = sp[44] * PI0[0][6][3];
+    A[208] = sp[44] * PI0[0][6][4];
+    A[209] = sp[44] * PI0[0][6][5];
+    A[210] = sp[44] * PI0[0][6][6];
+    A[211] = sp[44] * PI0[0][6][7];
+    A[212] = sp[44] * PI0[0][6][8];
+    A[213] = sp[44] * PI0[0][6][9];
+    std::fill(A + 214, A + 238, 0.0);
+    A[238] = sp[44] * PI0[0][7][0];
+    A[239] = sp[44] * PI0[0][7][1];
+    A[240] = sp[44] * PI0[0][7][2];
+    A[241] = sp[44] * PI0[0][7][3];
+    A[242] = sp[44] * PI0[0][7][4];
+    A[243] = sp[44] * PI0[0][7][5];
+    A[244] = sp[44] * PI0[0][7][6];
+    A[245] = sp[44] * PI0[0][7][7];
+    A[246] = sp[44] * PI0[0][7][8];
+    A[247] = sp[44] * PI0[0][7][9];
+    std::fill(A + 248, A + 272, 0.0);
+    A[272] = sp[44] * PI0[0][8][0];
+    A[273] = sp[44] * PI0[0][8][1];
+    A[274] = sp[44] * PI0[0][8][2];
+    A[275] = sp[44] * PI0[0][8][3];
+    A[276] = sp[44] * PI0[0][8][4];
+    A[277] = sp[44] * PI0[0][8][5];
+    A[278] = sp[44] * PI0[0][8][6];
+    A[279] = sp[44] * PI0[0][8][7];
+    A[280] = sp[44] * PI0[0][8][8];
+    A[281] = sp[44] * PI0[0][8][9];
+    std::fill(A + 282, A + 306, 0.0);
+    A[306] = sp[44] * PI0[0][9][0];
+    A[307] = sp[44] * PI0[0][9][1];
+    A[308] = sp[44] * PI0[0][9][2];
+    A[309] = sp[44] * PI0[0][9][3];
+    A[310] = sp[44] * PI0[0][9][4];
+    A[311] = sp[44] * PI0[0][9][5];
+    A[312] = sp[44] * PI0[0][9][6];
+    A[313] = sp[44] * PI0[0][9][7];
+    A[314] = sp[44] * PI0[0][9][8];
+    A[315] = sp[44] * PI0[0][9][9];
+    std::fill(A + 316, A + 350, 0.0);
+    A[350] = sp[44] * PI0[0][0][0];
+    A[351] = sp[44] * PI0[0][0][1];
+    A[352] = sp[44] * PI0[0][0][2];
+    A[353] = sp[44] * PI0[0][0][3];
+    A[354] = sp[44] * PI0[0][0][4];
+    A[355] = sp[44] * PI0[0][0][5];
+    A[356] = sp[44] * PI0[0][0][6];
+    A[357] = sp[44] * PI0[0][0][7];
+    A[358] = sp[44] * PI0[0][0][8];
+    A[359] = sp[44] * PI0[0][0][9];
+    std::fill(A + 360, A + 384, 0.0);
+    A[384] = sp[44] * PI0[0][1][0];
+    A[385] = sp[44] * PI0[0][1][1];
+    A[386] = sp[44] * PI0[0][1][2];
+    A[387] = sp[44] * PI0[0][1][3];
+    A[388] = sp[44] * PI0[0][1][4];
+    A[389] = sp[44] * PI0[0][1][5];
+    A[390] = sp[44] * PI0[0][1][6];
+    A[391] = sp[44] * PI0[0][1][7];
+    A[392] = sp[44] * PI0[0][1][8];
+    A[393] = sp[44] * PI0[0][1][9];
+    std::fill(A + 394, A + 418, 0.0);
+    A[418] = sp[44] * PI0[0][2][0];
+    A[419] = sp[44] * PI0[0][2][1];
+    A[420] = sp[44] * PI0[0][2][2];
+    A[421] = sp[44] * PI0[0][2][3];
+    A[422] = sp[44] * PI0[0][2][4];
+    A[423] = sp[44] * PI0[0][2][5];
+    A[424] = sp[44] * PI0[0][2][6];
+    A[425] = sp[44] * PI0[0][2][7];
+    A[426] = sp[44] * PI0[0][2][8];
+    A[427] = sp[44] * PI0[0][2][9];
+    std::fill(A + 428, A + 452, 0.0);
+    A[452] = sp[44] * PI0[0][3][0];
+    A[453] = sp[44] * PI0[0][3][1];
+    A[454] = sp[44] * PI0[0][3][2];
+    A[455] = sp[44] * PI0[0][3][3];
+    A[456] = sp[44] * PI0[0][3][4];
+    A[457] = sp[44] * PI0[0][3][5];
+    A[458] = sp[44] * PI0[0][3][6];
+    A[459] = sp[44] * PI0[0][3][7];
+    A[460] = sp[44] * PI0[0][3][8];
+    A[461] = sp[44] * PI0[0][3][9];
+    std::fill(A + 462, A + 486, 0.0);
+    A[486] = sp[44] * PI0[0][4][0];
+    A[487] = sp[44] * PI0[0][4][1];
+    A[488] = sp[44] * PI0[0][4][2];
+    A[489] = sp[44] * PI0[0][4][3];
+    A[490] = sp[44] * PI0[0][4][4];
+    A[491] = sp[44] * PI0[0][4][5];
+    A[492] = sp[44] * PI0[0][4][6];
+    A[493] = sp[44] * PI0[0][4][7];
+    A[494] = sp[44] * PI0[0][4][8];
+    A[495] = sp[44] * PI0[0][4][9];
+    std::fill(A + 496, A + 520, 0.0);
+    A[520] = sp[44] * PI0[0][5][0];
+    A[521] = sp[44] * PI0[0][5][1];
+    A[522] = sp[44] * PI0[0][5][2];
+    A[523] = sp[44] * PI0[0][5][3];
+    A[524] = sp[44] * PI0[0][5][4];
+    A[525] = sp[44] * PI0[0][5][5];
+    A[526] = sp[44] * PI0[0][5][6];
+    A[527] = sp[44] * PI0[0][5][7];
+    A[528] = sp[44] * PI0[0][5][8];
+    A[529] = sp[44] * PI0[0][5][9];
+    std::fill(A + 530, A + 554, 0.0);
+    A[554] = sp[44] * PI0[0][6][0];
+    A[555] = sp[44] * PI0[0][6][1];
+    A[556] = sp[44] * PI0[0][6][2];
+    A[557] = sp[44] * PI0[0][6][3];
+    A[558] = sp[44] * PI0[0][6][4];
+    A[559] = sp[44] * PI0[0][6][5];
+    A[560] = sp[44] * PI0[0][6][6];
+    A[561] = sp[44] * PI0[0][6][7];
+    A[562] = sp[44] * PI0[0][6][8];
+    A[563] = sp[44] * PI0[0][6][9];
+    std::fill(A + 564, A + 588, 0.0);
+    A[588] = sp[44] * PI0[0][7][0];
+    A[589] = sp[44] * PI0[0][7][1];
+    A[590] = sp[44] * PI0[0][7][2];
+    A[591] = sp[44] * PI0[0][7][3];
+    A[592] = sp[44] * PI0[0][7][4];
+    A[593] = sp[44] * PI0[0][7][5];
+    A[594] = sp[44] * PI0[0][7][6];
+    A[595] = sp[44] * PI0[0][7][7];
+    A[596] = sp[44] * PI0[0][7][8];
+    A[597] = sp[44] * PI0[0][7][9];
+    std::fill(A + 598, A + 622, 0.0);
+    A[622] = sp[44] * PI0[0][8][0];
+    A[623] = sp[44] * PI0[0][8][1];
+    A[624] = sp[44] * PI0[0][8][2];
+    A[625] = sp[44] * PI0[0][8][3];
+    A[626] = sp[44] * PI0[0][8][4];
+    A[627] = sp[44] * PI0[0][8][5];
+    A[628] = sp[44] * PI0[0][8][6];
+    A[629] = sp[44] * PI0[0][8][7];
+    A[630] = sp[44] * PI0[0][8][8];
+    A[631] = sp[44] * PI0[0][8][9];
+    std::fill(A + 632, A + 656, 0.0);
+    A[656] = sp[44] * PI0[0][9][0];
+    A[657] = sp[44] * PI0[0][9][1];
+    A[658] = sp[44] * PI0[0][9][2];
+    A[659] = sp[44] * PI0[0][9][3];
+    A[660] = sp[44] * PI0[0][9][4];
+    A[661] = sp[44] * PI0[0][9][5];
+    A[662] = sp[44] * PI0[0][9][6];
+    A[663] = sp[44] * PI0[0][9][7];
+    A[664] = sp[44] * PI0[0][9][8];
+    A[665] = sp[44] * PI0[0][9][9];
+    std::fill(A + 666, A + 700, 0.0);
+    A[700] = sp[44] * PI0[0][0][0];
+    A[701] = sp[44] * PI0[0][0][1];
+    A[702] = sp[44] * PI0[0][0][2];
+    A[703] = sp[44] * PI0[0][0][3];
+    A[704] = sp[44] * PI0[0][0][4];
+    A[705] = sp[44] * PI0[0][0][5];
+    A[706] = sp[44] * PI0[0][0][6];
+    A[707] = sp[44] * PI0[0][0][7];
+    A[708] = sp[44] * PI0[0][0][8];
+    A[709] = sp[44] * PI0[0][0][9];
+    std::fill(A + 710, A + 734, 0.0);
+    A[734] = sp[44] * PI0[0][1][0];
+    A[735] = sp[44] * PI0[0][1][1];
+    A[736] = sp[44] * PI0[0][1][2];
+    A[737] = sp[44] * PI0[0][1][3];
+    A[738] = sp[44] * PI0[0][1][4];
+    A[739] = sp[44] * PI0[0][1][5];
+    A[740] = sp[44] * PI0[0][1][6];
+    A[741] = sp[44] * PI0[0][1][7];
+    A[742] = sp[44] * PI0[0][1][8];
+    A[743] = sp[44] * PI0[0][1][9];
+    std::fill(A + 744, A + 768, 0.0);
+    A[768] = sp[44] * PI0[0][2][0];
+    A[769] = sp[44] * PI0[0][2][1];
+    A[770] = sp[44] * PI0[0][2][2];
+    A[771] = sp[44] * PI0[0][2][3];
+    A[772] = sp[44] * PI0[0][2][4];
+    A[773] = sp[44] * PI0[0][2][5];
+    A[774] = sp[44] * PI0[0][2][6];
+    A[775] = sp[44] * PI0[0][2][7];
+    A[776] = sp[44] * PI0[0][2][8];
+    A[777] = sp[44] * PI0[0][2][9];
+    std::fill(A + 778, A + 802, 0.0);
+    A[802] = sp[44] * PI0[0][3][0];
+    A[803] = sp[44] * PI0[0][3][1];
+    A[804] = sp[44] * PI0[0][3][2];
+    A[805] = sp[44] * PI0[0][3][3];
+    A[806] = sp[44] * PI0[0][3][4];
+    A[807] = sp[44] * PI0[0][3][5];
+    A[808] = sp[44] * PI0[0][3][6];
+    A[809] = sp[44] * PI0[0][3][7];
+    A[810] = sp[44] * PI0[0][3][8];
+    A[811] = sp[44] * PI0[0][3][9];
+    std::fill(A + 812, A + 836, 0.0);
+    A[836] = sp[44] * PI0[0][4][0];
+    A[837] = sp[44] * PI0[0][4][1];
+    A[838] = sp[44] * PI0[0][4][2];
+    A[839] = sp[44] * PI0[0][4][3];
+    A[840] = sp[44] * PI0[0][4][4];
+    A[841] = sp[44] * PI0[0][4][5];
+    A[842] = sp[44] * PI0[0][4][6];
+    A[843] = sp[44] * PI0[0][4][7];
+    A[844] = sp[44] * PI0[0][4][8];
+    A[845] = sp[44] * PI0[0][4][9];
+    std::fill(A + 846, A + 870, 0.0);
+    A[870] = sp[44] * PI0[0][5][0];
+    A[871] = sp[44] * PI0[0][5][1];
+    A[872] = sp[44] * PI0[0][5][2];
+    A[873] = sp[44] * PI0[0][5][3];
+    A[874] = sp[44] * PI0[0][5][4];
+    A[875] = sp[44] * PI0[0][5][5];
+    A[876] = sp[44] * PI0[0][5][6];
+    A[877] = sp[44] * PI0[0][5][7];
+    A[878] = sp[44] * PI0[0][5][8];
+    A[879] = sp[44] * PI0[0][5][9];
+    std::fill(A + 880, A + 904, 0.0);
+    A[904] = sp[44] * PI0[0][6][0];
+    A[905] = sp[44] * PI0[0][6][1];
+    A[906] = sp[44] * PI0[0][6][2];
+    A[907] = sp[44] * PI0[0][6][3];
+    A[908] = sp[44] * PI0[0][6][4];
+    A[909] = sp[44] * PI0[0][6][5];
+    A[910] = sp[44] * PI0[0][6][6];
+    A[911] = sp[44] * PI0[0][6][7];
+    A[912] = sp[44] * PI0[0][6][8];
+    A[913] = sp[44] * PI0[0][6][9];
+    std::fill(A + 914, A + 938, 0.0);
+    A[938] = sp[44] * PI0[0][7][0];
+    A[939] = sp[44] * PI0[0][7][1];
+    A[940] = sp[44] * PI0[0][7][2];
+    A[941] = sp[44] * PI0[0][7][3];
+    A[942] = sp[44] * PI0[0][7][4];
+    A[943] = sp[44] * PI0[0][7][5];
+    A[944] = sp[44] * PI0[0][7][6];
+    A[945] = sp[44] * PI0[0][7][7];
+    A[946] = sp[44] * PI0[0][7][8];
+    A[947] = sp[44] * PI0[0][7][9];
+    std::fill(A + 948, A + 972, 0.0);
+    A[972] = sp[44] * PI0[0][8][0];
+    A[973] = sp[44] * PI0[0][8][1];
+    A[974] = sp[44] * PI0[0][8][2];
+    A[975] = sp[44] * PI0[0][8][3];
+    A[976] = sp[44] * PI0[0][8][4];
+    A[977] = sp[44] * PI0[0][8][5];
+    A[978] = sp[44] * PI0[0][8][6];
+    A[979] = sp[44] * PI0[0][8][7];
+    A[980] = sp[44] * PI0[0][8][8];
+    A[981] = sp[44] * PI0[0][8][9];
+    std::fill(A + 982, A + 1006, 0.0);
+    A[1006] = sp[44] * PI0[0][9][0];
+    A[1007] = sp[44] * PI0[0][9][1];
+    A[1008] = sp[44] * PI0[0][9][2];
+    A[1009] = sp[44] * PI0[0][9][3];
+    A[1010] = sp[44] * PI0[0][9][4];
+    A[1011] = sp[44] * PI0[0][9][5];
+    A[1012] = sp[44] * PI0[0][9][6];
+    A[1013] = sp[44] * PI0[0][9][7];
+    A[1014] = sp[44] * PI0[0][9][8];
+    A[1015] = sp[44] * PI0[0][9][9];
+    std::fill(A + 1016, A + 1156, 0.0);
+    static const int DM0[2] = { 30, 32 };
+    static const int DM1[2] = { 30, 33 };
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 2; ++j)
+            A[34 * (i + 30) + (j + 30)] += FE22_C3_D001_Q15[0][0][j] * TP0[i];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            A[34 * (i + 30) + (j + 30)] += BF0[i][j];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 2; ++j)
+            A[34 * (i + 30) + DM0[j]] += FE22_C3_D001_Q15[0][0][j] * TP1[i];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 2; ++j)
+            A[34 * (i + 30) + DM1[j]] += FE22_C3_D001_Q15[0][0][j] * TP2[i];
   }
 
 };
@@ -14797,8 +22406,7 @@ return enabled;
     // FE* dimensions: [entities][points][dofs]
     // PI* dimensions: [entities][dofs][dofs] or [entities][dofs]
     // PM* dimensions: [entities][dofs][dofs]
-    alignas(32) static const double FE15_C0_D001_Q14[1][1][2] = { { { -1.0, 1.0 } } };
-    alignas(32) static const double FE5_C0_Q14[1][14][10] =
+    alignas(32) static const double FE12_C0_Q14[1][14][10] =
         { { { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
             { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
             { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
@@ -14813,16 +22421,17 @@ return enabled;
             { -0.05041039684813042, -0.1167122663164589, -0.1167122663164589, -0.116712266316459, 0.3953212143534666, 0.3953212143534666, 0.3953212143534665, 0.07152785091236918, 0.07152785091236906, 0.07152785091236924 },
             { -0.1167122663164588, -0.1167122663164588, -0.1167122663164589, -0.05041039684813052, 0.07152785091236925, 0.07152785091236925, 0.3953212143534665, 0.07152785091236928, 0.3953212143534663, 0.3953212143534664 },
             { -0.1167122663164589, -0.1167122663164589, -0.05041039684813053, -0.116712266316459, 0.07152785091236941, 0.3953212143534665, 0.07152785091236928, 0.3953212143534664, 0.07152785091236924, 0.3953212143534664 } } };
+    alignas(32) static const double FE8_C0_D001_Q14[1][1][2] = { { { -1.0, 1.0 } } };
     // Unstructured piecewise computations
-    const double J_c0 = coordinate_dofs[0] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[3] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c4 = coordinate_dofs[1] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[7] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c8 = coordinate_dofs[2] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[11] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c5 = coordinate_dofs[1] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[10] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c7 = coordinate_dofs[2] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[8] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c1 = coordinate_dofs[0] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[6] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c6 = coordinate_dofs[2] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[5] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c3 = coordinate_dofs[1] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[4] * FE15_C0_D001_Q14[0][0][1];
-    const double J_c2 = coordinate_dofs[0] * FE15_C0_D001_Q14[0][0][0] + coordinate_dofs[9] * FE15_C0_D001_Q14[0][0][1];
+    const double J_c0 = coordinate_dofs[0] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[3] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c4 = coordinate_dofs[1] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[7] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c8 = coordinate_dofs[2] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[11] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c5 = coordinate_dofs[1] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[10] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c7 = coordinate_dofs[2] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[8] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c1 = coordinate_dofs[0] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[6] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c6 = coordinate_dofs[2] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[5] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c3 = coordinate_dofs[1] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[4] * FE8_C0_D001_Q14[0][0][1];
+    const double J_c2 = coordinate_dofs[0] * FE8_C0_D001_Q14[0][0][0] + coordinate_dofs[9] * FE8_C0_D001_Q14[0][0][1];
     alignas(32) double sp[15];
     sp[0] = J_c4 * J_c8;
     sp[1] = J_c5 * J_c7;
@@ -14848,13 +22457,13 @@ return enabled;
         // Unstructured varying computations for num_points=14
         double w1_c0 = 0.0;
         for (int ic = 0; ic < 10; ++ic)
-            w1_c0 += w[1][ic] * FE5_C0_Q14[0][iq][ic];
+            w1_c0 += w[1][ic] * FE12_C0_Q14[0][iq][ic];
         double w1_c1 = 0.0;
         for (int ic = 0; ic < 10; ++ic)
-            w1_c1 += w[1][ic + 10] * FE5_C0_Q14[0][iq][ic];
+            w1_c1 += w[1][ic + 10] * FE12_C0_Q14[0][iq][ic];
         double w1_c2 = 0.0;
         for (int ic = 0; ic < 10; ++ic)
-            w1_c2 += w[1][ic + 20] * FE5_C0_Q14[0][iq][ic];
+            w1_c2 += w[1][ic + 20] * FE12_C0_Q14[0][iq][ic];
         alignas(32) double sv14[6];
         sv14[0] = -1 * w1_c0 * (1 / w[0][0]);
         sv14[1] = -1 * w1_c1 * (1 / w[0][0]);
@@ -14864,15 +22473,15 @@ return enabled;
         sv14[5] = -1 * sv14[2] * sp[14];
         const double fw0 = sv14[3] * weights14[iq];
         for (int i = 0; i < 10; ++i)
-            BF0[i] += fw0 * FE5_C0_Q14[0][iq][i];
+            BF0[i] += fw0 * FE12_C0_Q14[0][iq][i];
         const double fw1 = sv14[4] * weights14[iq];
         for (int i = 0; i < 10; ++i)
-            BF1[i] += fw1 * FE5_C0_Q14[0][iq][i];
+            BF1[i] += fw1 * FE12_C0_Q14[0][iq][i];
         const double fw2 = sv14[5] * weights14[iq];
         for (int i = 0; i < 10; ++i)
-            BF2[i] += fw2 * FE5_C0_Q14[0][iq][i];
+            BF2[i] += fw2 * FE12_C0_Q14[0][iq][i];
     }
-    std::fill(A, A + 30, 0.0);
+    std::fill(A, A + 34, 0.0);
     for (int i = 0; i < 10; ++i)
         A[i] += BF0[i];
     for (int i = 0; i < 10; ++i)
@@ -14900,7 +22509,7 @@ public:
 
   const char * signature() const final override
   {
-    return "007511ed76ce2da4f7d2c3d36fc0404a7f72f5d9edae1c210c7d4687d8f46ba76f49bfbfe9d0a7a49cb35781f50c4fe78f23b1f883650482ce51fd7a9cae2d7f";
+    return "54fe8c6c30d58268c61f9fd393117813a5400bfb50276f09efc8bf8ee9d8d5aade78db972787f05ccbfbb6a00a4315f453d8ad34559804fc61f4ec4b6e100b5b";
   }
 
   std::size_t rank() const final override
@@ -14925,17 +22534,17 @@ public:
 
   ufc::finite_element * create_coordinate_finite_element() const final override
   {
-    return new magnetic_finite_element_3();
+    return new magnetic_finite_element_1();
   }
 
   ufc::dofmap * create_coordinate_dofmap() const final override
   {
-    return new magnetic_dofmap_3();
+    return new magnetic_dofmap_1();
    }
 
   ufc::coordinate_mapping * create_coordinate_mapping() const final override
   {
-    return new magnetic_coordinate_mapping_3();
+    return new magnetic_coordinate_mapping_1();
   }
 
   ufc::finite_element * create_finite_element(std::size_t i) const final override
@@ -14943,13 +22552,13 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_1();
-    case 1:
-        return new magnetic_finite_element_1();
-    case 2:
         return new magnetic_finite_element_4();
+    case 1:
+        return new magnetic_finite_element_4();
+    case 2:
+        return new magnetic_finite_element_5();
     case 3:
-        return new magnetic_finite_element_1();
+        return new magnetic_finite_element_3();
     default:
         return nullptr;
     }
@@ -14960,13 +22569,13 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_1();
-    case 1:
-        return new magnetic_dofmap_1();
-    case 2:
         return new magnetic_dofmap_4();
+    case 1:
+        return new magnetic_dofmap_4();
+    case 2:
+        return new magnetic_dofmap_5();
     case 3:
-        return new magnetic_dofmap_1();
+        return new magnetic_dofmap_3();
     default:
         return nullptr;
     }
@@ -15151,7 +22760,7 @@ public:
 
   const char * signature() const final override
   {
-    return "d38df22cf85f060e8f514e8494b26499554be6137e7d76451ff302bb53e57f35f08d307bd9729bf9a7e6af785e3f51f496399b566a597fc0f902df75ea7596f8";
+    return "ddf25e5ef03bd7b0c419e99f150ecd76dbfdaa909e0dd76ec20af923aa412b7f71c2d55631b83562eb25292b8a9911ac42e60e72c6e83d285d05fe02db2f8cc9";
   }
 
   std::size_t rank() const final override
@@ -15176,17 +22785,17 @@ public:
 
   ufc::finite_element * create_coordinate_finite_element() const final override
   {
-    return new magnetic_finite_element_3();
+    return new magnetic_finite_element_1();
   }
 
   ufc::dofmap * create_coordinate_dofmap() const final override
   {
-    return new magnetic_dofmap_3();
+    return new magnetic_dofmap_1();
    }
 
   ufc::coordinate_mapping * create_coordinate_mapping() const final override
   {
-    return new magnetic_coordinate_mapping_3();
+    return new magnetic_coordinate_mapping_1();
   }
 
   ufc::finite_element * create_finite_element(std::size_t i) const final override
@@ -15194,11 +22803,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_1();
-    case 1:
         return new magnetic_finite_element_4();
+    case 1:
+        return new magnetic_finite_element_5();
     case 2:
-        return new magnetic_finite_element_1();
+        return new magnetic_finite_element_3();
     default:
         return nullptr;
     }
@@ -15209,11 +22818,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_1();
-    case 1:
         return new magnetic_dofmap_4();
+    case 1:
+        return new magnetic_dofmap_5();
     case 2:
-        return new magnetic_dofmap_1();
+        return new magnetic_dofmap_3();
     default:
         return nullptr;
     }
@@ -15406,30 +23015,6 @@ public:
 namespace magnetic
 {
 
-class CoefficientSpace_B: public dolfin::FunctionSpace
-{
-public:
-
-  // Constructor for standard function space
-  CoefficientSpace_B(std::shared_ptr<const dolfin::Mesh> mesh):
-    dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
-  {
-    // Do nothing
-  }
-
-  // Constructor for constrained function space
-  CoefficientSpace_B(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
-    dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
-  {
-    // Do nothing
-  }
-
-};
-
 class CoefficientSpace_k: public dolfin::FunctionSpace
 {
 public:
@@ -15437,8 +23022,8 @@ public:
   // Constructor for standard function space
   CoefficientSpace_k(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_5>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_5>(), *mesh))
   {
     // Do nothing
   }
@@ -15446,32 +23031,32 @@ public:
   // Constructor for constrained function space
   CoefficientSpace_k(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_5>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_5>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
 
 };
 
-class CoefficientSpace_u0: public dolfin::FunctionSpace
+class CoefficientSpace_velocity0: public dolfin::FunctionSpace
 {
 public:
 
   // Constructor for standard function space
-  CoefficientSpace_u0(std::shared_ptr<const dolfin::Mesh> mesh):
+  CoefficientSpace_velocity0(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_3>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_3>(), *mesh))
   {
     // Do nothing
   }
 
   // Constructor for constrained function space
-  CoefficientSpace_u0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
+  CoefficientSpace_velocity0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_3>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_3>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15485,8 +23070,8 @@ public:
   // Constructor for standard function space
   Form_a_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh))
   {
     // Do nothing
   }
@@ -15494,8 +23079,8 @@ public:
   // Constructor for constrained function space
   Form_a_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15509,8 +23094,8 @@ public:
   // Constructor for standard function space
   Form_a_FunctionSpace_1(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh))
   {
     // Do nothing
   }
@@ -15518,8 +23103,8 @@ public:
   // Constructor for constrained function space
   Form_a_FunctionSpace_1(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15568,7 +23153,7 @@ public:
 
 typedef CoefficientSpace_k Form_a_FunctionSpace_2;
 
-typedef CoefficientSpace_B Form_a_FunctionSpace_3;
+typedef CoefficientSpace_velocity0 Form_a_FunctionSpace_3;
 
 class Form_a: public dolfin::Form
 {
@@ -15576,7 +23161,7 @@ public:
 
   // Constructor
   Form_a(std::shared_ptr<const dolfin::FunctionSpace> V1, std::shared_ptr<const dolfin::FunctionSpace> V0):
-    dolfin::Form(2, 2), k(*this, 0), B(*this, 1)
+    dolfin::Form(2, 2), k(*this, 0), velocity0(*this, 1)
   {
     _function_spaces[0] = V0;
     _function_spaces[1] = V1;
@@ -15585,14 +23170,14 @@ public:
   }
 
   // Constructor
-  Form_a(std::shared_ptr<const dolfin::FunctionSpace> V1, std::shared_ptr<const dolfin::FunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> B):
-    dolfin::Form(2, 2), k(*this, 0), B(*this, 1)
+  Form_a(std::shared_ptr<const dolfin::FunctionSpace> V1, std::shared_ptr<const dolfin::FunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> velocity0):
+    dolfin::Form(2, 2), k(*this, 0), velocity0(*this, 1)
   {
     _function_spaces[0] = V0;
     _function_spaces[1] = V1;
 
     this->k = k;
-    this->B = B;
+    this->velocity0 = velocity0;
 
     _ufc_form = std::make_shared<const magnetic_form_0>();
   }
@@ -15606,7 +23191,7 @@ public:
   {
     if (name == "k")
       return 0;
-    else if (name == "B")
+    else if (name == "velocity0")
       return 1;
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15623,7 +23208,7 @@ public:
     case 0:
       return "k";
     case 1:
-      return "B";
+      return "velocity0";
     }
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15638,11 +23223,11 @@ public:
   typedef Form_a_MultiMeshFunctionSpace_0 MultiMeshTestSpace;
   typedef Form_a_MultiMeshFunctionSpace_1 MultiMeshTrialSpace;
   typedef Form_a_FunctionSpace_2 CoefficientSpace_k;
-  typedef Form_a_FunctionSpace_3 CoefficientSpace_B;
+  typedef Form_a_FunctionSpace_3 CoefficientSpace_velocity0;
 
   // Coefficients
   dolfin::CoefficientAssigner k;
-  dolfin::CoefficientAssigner B;
+  dolfin::CoefficientAssigner velocity0;
 };
 
 class MultiMeshForm_a: public dolfin::MultiMeshForm
@@ -15651,7 +23236,7 @@ public:
 
   // Constructor
   MultiMeshForm_a(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V1, std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0):
-    dolfin::MultiMeshForm(V1, V0), k(*this, 0), B(*this, 1)
+    dolfin::MultiMeshForm(V1, V0), k(*this, 0), velocity0(*this, 1)
   {
     // Create and add standard forms
     std::size_t num_parts = V0->num_parts(); // assume all equal and pick first
@@ -15669,8 +23254,8 @@ public:
   }
 
   // Constructor
-  MultiMeshForm_a(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V1, std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> B):
-    dolfin::MultiMeshForm(V1, V0), k(*this, 0), B(*this, 1)
+  MultiMeshForm_a(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V1, std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> velocity0):
+    dolfin::MultiMeshForm(V1, V0), k(*this, 0), velocity0(*this, 1)
   {
     // Create and add standard forms
     std::size_t num_parts = V0->num_parts(); // assume all equal and pick first
@@ -15685,7 +23270,7 @@ public:
 
     /// Assign coefficients
     this->k = k;
-    this->B = B;
+    this->velocity0 = velocity0;
 
   }
 
@@ -15698,7 +23283,7 @@ public:
   {
     if (name == "k")
       return 0;
-    else if (name == "B")
+    else if (name == "velocity0")
       return 1;
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15715,7 +23300,7 @@ public:
     case 0:
       return "k";
     case 1:
-      return "B";
+      return "velocity0";
     }
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15730,11 +23315,11 @@ public:
   typedef Form_a_MultiMeshFunctionSpace_0 MultiMeshTestSpace;
   typedef Form_a_MultiMeshFunctionSpace_1 MultiMeshTrialSpace;
   typedef Form_a_FunctionSpace_2 CoefficientSpace_k;
-  typedef Form_a_FunctionSpace_3 CoefficientSpace_B;
+  typedef Form_a_FunctionSpace_3 CoefficientSpace_velocity0;
 
   // Coefficients
   dolfin::MultiMeshCoefficientAssigner k;
-  dolfin::MultiMeshCoefficientAssigner B;
+  dolfin::MultiMeshCoefficientAssigner velocity0;
 };
 
 class Form_L_FunctionSpace_0: public dolfin::FunctionSpace
@@ -15744,8 +23329,8 @@ public:
   // Constructor for standard function space
   Form_L_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh))
   {
     // Do nothing
   }
@@ -15753,8 +23338,8 @@ public:
   // Constructor for constrained function space
   Form_L_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15783,7 +23368,7 @@ public:
 
 typedef CoefficientSpace_k Form_L_FunctionSpace_1;
 
-typedef CoefficientSpace_u0 Form_L_FunctionSpace_2;
+typedef CoefficientSpace_velocity0 Form_L_FunctionSpace_2;
 
 class Form_L: public dolfin::Form
 {
@@ -15791,7 +23376,7 @@ public:
 
   // Constructor
   Form_L(std::shared_ptr<const dolfin::FunctionSpace> V0):
-    dolfin::Form(1, 2), k(*this, 0), u0(*this, 1)
+    dolfin::Form(1, 2), k(*this, 0), velocity0(*this, 1)
   {
     _function_spaces[0] = V0;
 
@@ -15799,13 +23384,13 @@ public:
   }
 
   // Constructor
-  Form_L(std::shared_ptr<const dolfin::FunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> u0):
-    dolfin::Form(1, 2), k(*this, 0), u0(*this, 1)
+  Form_L(std::shared_ptr<const dolfin::FunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> velocity0):
+    dolfin::Form(1, 2), k(*this, 0), velocity0(*this, 1)
   {
     _function_spaces[0] = V0;
 
     this->k = k;
-    this->u0 = u0;
+    this->velocity0 = velocity0;
 
     _ufc_form = std::make_shared<const magnetic_form_1>();
   }
@@ -15819,7 +23404,7 @@ public:
   {
     if (name == "k")
       return 0;
-    else if (name == "u0")
+    else if (name == "velocity0")
       return 1;
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15836,7 +23421,7 @@ public:
     case 0:
       return "k";
     case 1:
-      return "u0";
+      return "velocity0";
     }
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15849,11 +23434,11 @@ public:
   typedef Form_L_FunctionSpace_0 TestSpace;
   typedef Form_L_MultiMeshFunctionSpace_0 MultiMeshTestSpace;
   typedef Form_L_FunctionSpace_1 CoefficientSpace_k;
-  typedef Form_L_FunctionSpace_2 CoefficientSpace_u0;
+  typedef Form_L_FunctionSpace_2 CoefficientSpace_velocity0;
 
   // Coefficients
   dolfin::CoefficientAssigner k;
-  dolfin::CoefficientAssigner u0;
+  dolfin::CoefficientAssigner velocity0;
 };
 
 class MultiMeshForm_L: public dolfin::MultiMeshForm
@@ -15862,7 +23447,7 @@ public:
 
   // Constructor
   MultiMeshForm_L(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0):
-    dolfin::MultiMeshForm(V0), k(*this, 0), u0(*this, 1)
+    dolfin::MultiMeshForm(V0), k(*this, 0), velocity0(*this, 1)
   {
     // Create and add standard forms
     std::size_t num_parts = V0->num_parts(); // assume all equal and pick first
@@ -15880,8 +23465,8 @@ public:
   }
 
   // Constructor
-  MultiMeshForm_L(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> u0):
-    dolfin::MultiMeshForm(V0), k(*this, 0), u0(*this, 1)
+  MultiMeshForm_L(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> velocity0):
+    dolfin::MultiMeshForm(V0), k(*this, 0), velocity0(*this, 1)
   {
     // Create and add standard forms
     std::size_t num_parts = V0->num_parts(); // assume all equal and pick first
@@ -15896,7 +23481,7 @@ public:
 
     /// Assign coefficients
     this->k = k;
-    this->u0 = u0;
+    this->velocity0 = velocity0;
 
   }
 
@@ -15909,7 +23494,7 @@ public:
   {
     if (name == "k")
       return 0;
-    else if (name == "u0")
+    else if (name == "velocity0")
       return 1;
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15926,7 +23511,7 @@ public:
     case 0:
       return "k";
     case 1:
-      return "u0";
+      return "velocity0";
     }
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15939,11 +23524,11 @@ public:
   typedef Form_L_FunctionSpace_0 TestSpace;
   typedef Form_L_MultiMeshFunctionSpace_0 MultiMeshTestSpace;
   typedef Form_L_FunctionSpace_1 CoefficientSpace_k;
-  typedef Form_L_FunctionSpace_2 CoefficientSpace_u0;
+  typedef Form_L_FunctionSpace_2 CoefficientSpace_velocity0;
 
   // Coefficients
   dolfin::MultiMeshCoefficientAssigner k;
-  dolfin::MultiMeshCoefficientAssigner u0;
+  dolfin::MultiMeshCoefficientAssigner velocity0;
 };
 
 // Class typedefs
