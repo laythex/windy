@@ -34,12 +34,12 @@ int main(int argc, char **argv)
     // curves and points.
 
     // Angle between two triangles above which an edge is considered as sharp:
-    double angle = 120;
+    double angle = 30;
 
     // For complex geometries, patches can be too complex, too elongated or too
     // large to be parametrized; setting the following option will force the
     // creation of patches that are amenable to reparametrization:
-    bool forceParametrizablePatches = true;
+    bool forceParametrizablePatches = false;
 
     // For open surfaces include the boundary edges in the classification process:
     bool includeBoundary = true;
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     gmsh::model::geo::synchronize();
 
     int f = gmsh::model::mesh::field::add("MathEval");
-    gmsh::model::mesh::field::setString(f, "F", "0.1");
+    gmsh::model::mesh::field::setString(f, "F", "1");
     gmsh::model::mesh::field::setAsBackgroundMesh(f);
 
     gmsh::model::mesh::generate(3);

@@ -5,11 +5,14 @@
 #include "TentativeVelocity.h"
 #include "PressureUpdate.h"
 #include "VelocityUpdate.h"
+#include "mshr.h"
 
 using namespace dolfin;
 
 // Радиус планеты
-const int rad = 1;
+const double rad = 0.5;
+// Высота атмосферы
+const double height = 0.5;
 
 // Вектор вращения планеты
 std::vector<double> w = {0, 0, 1};
@@ -22,9 +25,9 @@ public:
 
     void eval(Array<double> &values, const Array<double> &coord) const
     {
-        double x = coord[0] - rad / 2;
-        double y = coord[1] - rad / 2;
-        double z = coord[2] - rad / 2;
+        double x = coord[0];
+        double y = coord[1];
+        double z = coord[2];
         values[0] = w[1] * z - y * w[2];
         values[1] = -w[0] * z + w[2] * x;
         values[2] = w[0] * y - x * w[1];
@@ -35,16 +38,22 @@ public:
 
 class Surface : public SubDomain
 {
-    bool inside(const Array<double> &x, bool on_boundary) const
+    bool inside(const Array<double> &coord, bool on_boundary) const
     {
-        return sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) < rad + DOLFIN_EPS;
+        double x = coord[0];
+        double y = coord[1];
+        double z = coord[2];
+        return sqrt(x * x + y * y + z * z) < rad + DOLFIN_EPS;
     }
 };
 
 int main()
 {
-
-    auto mesh = std::make_shared<Mesh>(Mesh("../3Dmodel/Atmosphere.xml"));
+    unsigned resolution = 10;
+    auto universe = mshr::Sphere(Point(0, 0, 0), rad + height);
+    auto planet = mshr::Sphere(Point(0, 0, 0), rad);
+    auto atmosphere = universe - planet;
+    auto mesh = mshr::generate_mesh(atmosphere, resolution);
 
     auto V = std::make_shared<VelocityUpdate::FunctionSpace>(mesh);
     auto Q = std::make_shared<PressureUpdate::FunctionSpace>(mesh);
@@ -97,6 +106,9 @@ int main()
 
     // Звучит страшно, я это не трогал
     const std::string prec(has_krylov_solver_preconditioner("amg") ? "amg" : "default");
+
+    // std::system("rmdir /s C:/Users/1204k/ForLinux/windy/atmosphere/build/results");
+    // std::filesystem::remove_all("results");
 
     File ufile("results/velocity.pvd");
     File pfile("results/pressure.pvd");
