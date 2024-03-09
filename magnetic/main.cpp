@@ -23,7 +23,6 @@ class WholeDomain : public SubDomain
 class MagneticField : public Expression
 {
 public:
-
 	// Конструктор чтобы Expression был vector-valued
 	MagneticField() : Expression(3) {}
 
@@ -31,7 +30,7 @@ public:
 	{
 		// Здесь можно поле диполя для начала сделать
 		values[0] = 0;
-		values[1] = 0;
+		values[1] = 1;
 		values[2] = 0;
 	}
 };
@@ -39,14 +38,43 @@ public:
 class InflowVelocity : public Expression
 {
 public:
-
 	// Конструктор чтобы Expression был vector-valued
 	InflowVelocity() : Expression(3) {}
 
 	void eval(Array<double> &values, const Array<double> &x) const
 	{
 		// Здесь можно поле диполя для начала сделать
-		values[0] = 10;
+		values[0] = 1;
+		values[1] = 0;
+		values[2] = 0;
+	}
+};
+
+class InitialCondition : public Expression
+{
+public:
+	// Конструктор чтобы Expression был vector-valued
+	InitialCondition() : Expression(4) {}
+
+	void eval(Array<double> &values, const Array<double> &x) const
+	{
+		values[0] = 1;
+		values[1] = 0;
+		values[2] = 0;
+		values[3] = 1; // Плотность
+	}
+};
+
+// Потом норм сделаю
+class InitialCondition1 : public Expression
+{
+public:
+	// Конструктор чтобы Expression был vector-valued
+	InitialCondition1() : Expression(3) {}
+
+	void eval(Array<double> &values, const Array<double> &x) const
+	{
+		values[0] = 1;
 		values[1] = 0;
 		values[2] = 0;
 	}
@@ -76,43 +104,54 @@ int main()
 	DirichletBC inflow_density_bc(M->sub(1), d_in, whole_domain);
 
 	// Вектор из граничных условий
-	std::vector<const DirichletBC*> bcs = {&inflow_velocity_bc, 
-										   &inflow_density_bc};
+	std::vector<const DirichletBC *> bcs = {&inflow_velocity_bc,
+											&inflow_density_bc};
 
 	// Шаг и длительность симуляции
 	double dt = 0.01;
-	double T = 60;
+	double T = 1;
+
+	// Искомые функции
+	Function m(M);
+
+	// Начальные условия
+	InitialCondition ic;
+	m = ic;
 
 	// Инициализация вещей из .hpp
 	auto k = std::make_shared<Constant>(dt);
 	auto B = std::make_shared<MagneticField>();
 	auto velocity0 = std::make_shared<Function>(M->sub(0)->collapse());
 
+	InitialCondition1 ic1;
+	*velocity0 = ic1;
+
 	magnetic::BilinearForm a(M, M);
 	magnetic::LinearForm L(M);
 
 	a.k = k;
-	// a.B = B;
+	a.B = B;
 	a.velocity0 = velocity0;
 	L.k = k;
 	L.velocity0 = velocity0;
 
-	// Искомые функции
-	Function m(M);
+  	File vfile("results/velocity.pvd");
+  	File dfile("results/density.pvd");
 
 	// Основной цикл
 	double t = 0;
-	while (t < T)
+	while (t < dt)
 	{
 		solve(a == L, m, bcs);
 		velocity0 = std::make_shared<Function>(m[0]);
 
-		t += dt;
-		cout << "t = " << t << endl;
-	}
 
-	File file("magnetic.pvd");
-	file << m[0];
+		vfile << m[0];
+		dfile << m[1];
+
+		t += dt;
+		cout << "t = " << t << " s\t" << t / T * 1e2 << "%" << endl;
+	}
 
 	// Костя говножоп
 	return 0;

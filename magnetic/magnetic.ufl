@@ -3,9 +3,9 @@
 # https://fenicsproject.org/pub/tutorial/html/._ftut1010.html#ftut1:reactionsystem
 
 # Для генерации .hpp
-# ffc -l dolfin velocity.ufl
+# ffc -l dolfin magnetic.ufl
 
-from ufl_legacy import (dx, dot, cross, div, lhs, rhs,
+from ufl_legacy import (dx, dot, cross, div, grad, lhs, rhs,
                  Coefficient, VectorElement, FiniteElement,
                  tetrahedron, triangle,
                  TestFunctions, TrialFunctions)
@@ -19,10 +19,9 @@ mp = 1.67262192369e-24
 mn = 1.67492749804e-24
 
 qmc = e / (mp * c)
-qmc = 1
 
 # Чтобы было проще отлаживать
-# qmc = 1e10
+qmc = 1e3
 
 V = VectorElement("Lagrange", tetrahedron, 2)
 D = FiniteElement("Lagrange", tetrahedron, 1)
@@ -38,8 +37,8 @@ B = Coefficient(V)
 
 # 2-й закон Ньютона + уравнение непрерывности
 eq = (1 / k) * dot(velocity - velocity0, v) * dx + \
-     div(density * velocity0) * d * dx# - \
-     # qmc * dot(cross(velocity, B), v) * dx
+     div(density * velocity0) * d * dx - \
+     qmc * dot(cross(velocity, B), v) * dx
 
 a = lhs(eq)
 L = rhs(eq)
