@@ -5,10 +5,9 @@
 # Для генерации .hpp
 # ffc -l dolfin magnetic.ufl
 
-from ufl_legacy import (dx, dot, cross, div, grad, lhs, rhs,
+from ufl_legacy import (dx, dot, cross, div, lhs, rhs,
                  Coefficient, VectorElement, FiniteElement,
-                 tetrahedron, triangle,
-                 TestFunctions, TrialFunctions)
+                 tetrahedron, TestFunction, TrialFunction)
 
 # Наверное стоит все решать в СИ как умные дядьки, но пока делаю в СГС
 # Коэффициент q/mc в ускорении, разный для разных частиц
@@ -21,23 +20,20 @@ mn = 1.67492749804e-24
 qmc = e / (mp * c)
 
 # Чтобы было проще отлаживать
-qmc = 1e3
+qmc = 1
 
 V = VectorElement("Lagrange", tetrahedron, 2)
-D = FiniteElement("Lagrange", tetrahedron, 1)
-M = V * D
 R = FiniteElement("Real", tetrahedron, 0)
 
-velocity, density = TrialFunctions(M)
-v, d = TestFunctions(M)
+velocity = TrialFunction(V)
+v = TestFunction(V)
 
 k = Coefficient(R)
-velocity0 = Coefficient(V)
 B = Coefficient(V)
+velocity0 = Coefficient(V)
 
-# 2-й закон Ньютона + уравнение непрерывности
-eq = (1 / k) * dot(velocity - velocity0, v) * dx + \
-     div(density * velocity0) * d * dx - \
+# 2-й закон Ньютона
+eq = (1 / k) * dot(velocity - velocity0, v) * dx - \
      qmc * dot(cross(velocity, B), v) * dx
 
 a = lhs(eq)

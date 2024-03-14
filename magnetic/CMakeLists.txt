@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME} main.cpp)
 
 # Target libraries
 target_link_libraries(${PROJECT_NAME} dolfin)
+target_link_libraries(${PROJECT_NAME} mshr)
 
 # Test targets
 set(test_parameters -np 3 ${MPIEXEC_PARAMS} "./${PROJECT_NAME}")
