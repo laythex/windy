@@ -1,0 +1,19 @@
+from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
+                 grad, inner,
+                 tetrahedron, TestFunction, TrialFunction)
+
+V = VectorElement("Lagrange", tetrahedron, 3)
+Q = FiniteElement("Lagrange", tetrahedron, 1)
+R = FiniteElement("Real", tetrahedron, 0)
+
+u = TrialFunction(V)
+v = TestFunction(V)
+
+
+k  = Coefficient(R)
+u1 = Coefficient(V)
+p1 = Coefficient(Q)
+
+
+a = inner(u, v)*dx
+L = inner(u1, v)*dx - k*inner(grad(p1), v)*dx
