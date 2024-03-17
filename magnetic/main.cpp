@@ -44,11 +44,7 @@ public:
 		double my = 20;
 		double mz = 0;
 
-		// Сдвиг координат в центр области
-		double shift = 0;
-		double x = coords[0] - shift;
-		double y = coords[1] - shift;
-		double z = coords[2] - shift;
+		double x = coords[0], y = coords[1], z = coords[2];
 
 		// Штуки для вычисления поля диполя
 		double rm = x * mx + y * my + z * mz;
@@ -69,7 +65,7 @@ int main()
 	// auto mesh = std::make_shared<Mesh>(UnitCubeMesh::create({size, size, size}, CellType::Type::tetrahedron));
 
 	// Нагло позаимствовал
-    unsigned resolution = 12;
+    unsigned resolution = 24;
     auto universe = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
     auto planet = mshr::Sphere(Point(0, 0, 0), radius);
 	auto atmo = universe - planet;
