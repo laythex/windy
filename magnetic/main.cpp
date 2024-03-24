@@ -1,9 +1,11 @@
 #include <dolfin.h>
-#include "magnetic.h"
+#include "velocity.h"
+#include "concentration.h"
 #include "mshr.h"
 
 using namespace dolfin;
 
+// Размеры расчетной области
 const double radius = 1;
 const double boxsize = 2;
 
@@ -12,11 +14,11 @@ class InflowDomain : public SubDomain
 {
 	bool inside(const Array<double> &x, bool on_boundary) const
 	{
-		// return (x[0] < DOLFIN_EPS);
 		return (fabs(x[0] + boxsize) < DOLFIN_EPS);
 	}
 };
 
+// Скорость частиц на входе
 class InflowVelocity : public Expression
 {
 public:
@@ -31,6 +33,17 @@ public:
 	}
 };
 
+// Концентрация частиц на входе
+class InflowConcentration : public Expression
+{
+public:
+	void eval(Array<double> &values, const Array<double> &x) const
+	{
+		values[0] = 1;
+	}
+};
+
+// Магнитное поле Земли
 class MagneticField : public Expression
 {
 public:
@@ -38,9 +51,9 @@ public:
 	MagneticField() : Expression(3) {}
 
 	void eval(Array<double> &values, const Array<double> &coords) const
-	{	
+	{
 		// Дипольный момент Земли
-		double mx = 5;
+		double mx = 20;
 		double my = 20;
 		double mz = 0;
 
@@ -60,64 +73,86 @@ public:
 
 int main()
 {
-	// Для начала просто куб
-	// long unsigned size = 8;
-	// auto mesh = std::make_shared<Mesh>(UnitCubeMesh::create({size, size, size}, CellType::Type::tetrahedron));
-
-	// Нагло позаимствовал
-    unsigned resolution = 24;
-    auto universe = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
-    auto planet = mshr::Sphere(Point(0, 0, 0), radius);
-	auto atmo = universe - planet;
-    auto mesh = mshr::generate_mesh(atmo, resolution);
-
-	// Пространства функций
-	auto V = std::make_shared<magnetic::FunctionSpace>(mesh);
-
-	// Домен, который отвечает за вход
-	auto inflow_domain = std::make_shared<InflowDomain>();
-
-	// Граничное условие на скорость
-	auto inflow_velocity = std::make_shared<InflowVelocity>();
-	DirichletBC bc(V, inflow_velocity, inflow_domain);
-
 	// Шаг и длительность симуляции
 	double dt = 0.01;
 	double T = 1;
 
+	// Нагло позаимствовал
+	unsigned resolution = 24;
+	auto universe = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
+	auto planet = mshr::Sphere(Point(0, 0, 0), radius);
+	auto atmosphere = universe - planet;
+	auto mesh = mshr::generate_mesh(atmosphere, resolution);
+
+	// Пространства функций
+	auto V = std::make_shared<velocity::FunctionSpace>(mesh);
+	auto C = std::make_shared<concentration::FunctionSpace>(mesh);
+
+	// Домен, который отвечает за вход
+	auto inflow_domain = std::make_shared<InflowDomain>();
+
+
+	// Граничное условие на скорость
+	auto inflow_vel = std::make_shared<InflowVelocity>();
+	DirichletBC vel_bc(V, inflow_vel, inflow_domain);
+
 	// Искомая функция
-	Function velocity(V);
+	Function vel(V);
 
 	// Начальные условия (совпадают с граничными)
-	InflowVelocity ic;
-	velocity = ic;
+	InflowVelocity vel_ic;
+	vel = vel_ic;
 
 	// Инициализация вещей из .hpp
 	auto k = std::make_shared<Constant>(dt);
 	auto B = std::make_shared<MagneticField>();
-	auto velocity0 = std::make_shared<Function>(V);
+	auto vel0 = std::make_shared<Function>(V);
+	*vel0 = vel_ic;
 
-	*velocity0 = ic;
+	velocity::BilinearForm av(V, V);
+	velocity::LinearForm Lv(V);
 
-	magnetic::BilinearForm a(V, V);
-	magnetic::LinearForm L(V);
+	av.k = k;
+	av.B = B;
+	Lv.k = k;
+	Lv.vel0 = vel0;
 
-	a.k = k;
-	a.B = B;
-	L.k = k;
-	L.velocity0 = velocity0;
+
+	// Практически то же самое с концентрацией
+	auto inflow_conc = std::make_shared<InflowConcentration>();
+	DirichletBC conc_bc(C, inflow_conc, inflow_domain);
+
+	Function conc(C);
+
+	InflowConcentration conc_ic;
+	conc = conc_ic;
+
+	auto conc0 = std::make_shared<Function>(C);
+	*conc0 = conc_ic;
+
+	concentration::BilinearForm ac(C, C);
+	concentration::LinearForm Lc(C);
+
+	ac.k = k;
+	ac.vel = vel0;
+	Lc.k = k;
+	Lc.conc0 = conc0;
+
 
 	File vfile("results/velocity.pvd");
+	File cfile("results/concentration.pvd");
 
 	// Основной цикл
 	double t = 0;
 	while (t < T)
 	{
-		solve(a == L, velocity, bc);
+		solve(av == Lv, vel, vel_bc);
+		*vel0 = vel;
+		vfile << vel;
 
-		*velocity0 = velocity;
-
-		vfile << velocity;
+		solve(ac == Lc, conc, conc_bc);
+		*conc0 = conc;
+		cfile << conc;
 
 		cout << "t = " << t << " s\t" << t / T * 1e2 << "%" << endl;
 		t += dt;

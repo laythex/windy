@@ -28,24 +28,24 @@
 //  representation:                 'auto'
 //  split:                          False
 
-#ifndef __MAGNETIC_H
-#define __MAGNETIC_H
+#ifndef __VELOCITY_H
+#define __VELOCITY_H
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <ufc.h>
 
-class magnetic_finite_element_0: public ufc::finite_element
+class velocity_finite_element_0: public ufc::finite_element
 {
 public:
 
-  magnetic_finite_element_0() : ufc::finite_element()
+  velocity_finite_element_0() : ufc::finite_element()
   {
     // Do nothing
   }
 
-  ~magnetic_finite_element_0() override
+  ~velocity_finite_element_0() override
   {
     // Do nothing
   }
@@ -2497,22 +2497,22 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_0();
+    return new velocity_finite_element_0();
   }
 
 };
 
 
-class magnetic_finite_element_1: public ufc::finite_element
+class velocity_finite_element_1: public ufc::finite_element
 {
 public:
 
-  magnetic_finite_element_1() : ufc::finite_element()
+  velocity_finite_element_1() : ufc::finite_element()
   {
     // Do nothing
   }
 
-  ~magnetic_finite_element_1() override
+  ~velocity_finite_element_1() override
   {
     // Do nothing
   }
@@ -8799,11 +8799,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_0();
+        return new velocity_finite_element_0();
     case 1:
-        return new magnetic_finite_element_0();
+        return new velocity_finite_element_0();
     case 2:
-        return new magnetic_finite_element_0();
+        return new velocity_finite_element_0();
     default:
         return nullptr;
     }
@@ -8811,22 +8811,22 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_1();
+    return new velocity_finite_element_1();
   }
 
 };
 
 
-class magnetic_finite_element_2: public ufc::finite_element
+class velocity_finite_element_2: public ufc::finite_element
 {
 public:
 
-  magnetic_finite_element_2() : ufc::finite_element()
+  velocity_finite_element_2() : ufc::finite_element()
   {
     // Do nothing
   }
 
-  ~magnetic_finite_element_2() override
+  ~velocity_finite_element_2() override
   {
     // Do nothing
   }
@@ -9835,22 +9835,22 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_2();
+    return new velocity_finite_element_2();
   }
 
 };
 
 
-class magnetic_finite_element_3: public ufc::finite_element
+class velocity_finite_element_3: public ufc::finite_element
 {
 public:
 
-  magnetic_finite_element_3() : ufc::finite_element()
+  velocity_finite_element_3() : ufc::finite_element()
   {
     // Do nothing
   }
 
-  ~magnetic_finite_element_3() override
+  ~velocity_finite_element_3() override
   {
     // Do nothing
   }
@@ -12034,11 +12034,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_2();
+        return new velocity_finite_element_2();
     case 1:
-        return new magnetic_finite_element_2();
+        return new velocity_finite_element_2();
     case 2:
-        return new magnetic_finite_element_2();
+        return new velocity_finite_element_2();
     default:
         return nullptr;
     }
@@ -12046,22 +12046,22 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_3();
+    return new velocity_finite_element_3();
   }
 
 };
 
 
-class magnetic_finite_element_4: public ufc::finite_element
+class velocity_finite_element_4: public ufc::finite_element
 {
 public:
 
-  magnetic_finite_element_4() : ufc::finite_element()
+  velocity_finite_element_4() : ufc::finite_element()
   {
     // Do nothing
   }
 
-  ~magnetic_finite_element_4() override
+  ~velocity_finite_element_4() override
   {
     // Do nothing
   }
@@ -12361,22 +12361,22 @@ public:
 
   ufc::finite_element * create() const final override
   {
-    return new magnetic_finite_element_4();
+    return new velocity_finite_element_4();
   }
 
 };
 
 
-class magnetic_dofmap_0: public ufc::dofmap
+class velocity_dofmap_0: public ufc::dofmap
 {
 public:
 
-  magnetic_dofmap_0() : ufc::dofmap()
+  velocity_dofmap_0() : ufc::dofmap()
   {
     // Do nothing
   }
 
-  ~magnetic_dofmap_0() override
+  ~velocity_dofmap_0() override
   {
     // Do nothing
   }
@@ -12675,22 +12675,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_0();
+    return new velocity_dofmap_0();
   }
 
 };
 
 
-class magnetic_dofmap_1: public ufc::dofmap
+class velocity_dofmap_1: public ufc::dofmap
 {
 public:
 
-  magnetic_dofmap_1() : ufc::dofmap()
+  velocity_dofmap_1() : ufc::dofmap()
   {
     // Do nothing
   }
 
-  ~magnetic_dofmap_1() override
+  ~velocity_dofmap_1() override
   {
     // Do nothing
   }
@@ -13191,11 +13191,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_0();
+        return new velocity_dofmap_0();
     case 1:
-        return new magnetic_dofmap_0();
+        return new velocity_dofmap_0();
     case 2:
-        return new magnetic_dofmap_0();
+        return new velocity_dofmap_0();
     default:
         return nullptr;
     }
@@ -13203,22 +13203,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_1();
+    return new velocity_dofmap_1();
   }
 
 };
 
 
-class magnetic_dofmap_2: public ufc::dofmap
+class velocity_dofmap_2: public ufc::dofmap
 {
 public:
 
-  magnetic_dofmap_2() : ufc::dofmap()
+  velocity_dofmap_2() : ufc::dofmap()
   {
     // Do nothing
   }
 
-  ~magnetic_dofmap_2() override
+  ~velocity_dofmap_2() override
   {
     // Do nothing
   }
@@ -13449,22 +13449,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_2();
+    return new velocity_dofmap_2();
   }
 
 };
 
 
-class magnetic_dofmap_3: public ufc::dofmap
+class velocity_dofmap_3: public ufc::dofmap
 {
 public:
 
-  magnetic_dofmap_3() : ufc::dofmap()
+  velocity_dofmap_3() : ufc::dofmap()
   {
     // Do nothing
   }
 
-  ~magnetic_dofmap_3() override
+  ~velocity_dofmap_3() override
   {
     // Do nothing
   }
@@ -13801,11 +13801,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_2();
+        return new velocity_dofmap_2();
     case 1:
-        return new magnetic_dofmap_2();
+        return new velocity_dofmap_2();
     case 2:
-        return new magnetic_dofmap_2();
+        return new velocity_dofmap_2();
     default:
         return nullptr;
     }
@@ -13813,22 +13813,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_3();
+    return new velocity_dofmap_3();
   }
 
 };
 
 
-class magnetic_dofmap_4: public ufc::dofmap
+class velocity_dofmap_4: public ufc::dofmap
 {
 public:
 
-  magnetic_dofmap_4() : ufc::dofmap()
+  velocity_dofmap_4() : ufc::dofmap()
   {
     // Do nothing
   }
 
-  ~magnetic_dofmap_4() override
+  ~velocity_dofmap_4() override
   {
     // Do nothing
   }
@@ -13994,22 +13994,22 @@ public:
 
   ufc::dofmap * create() const final override
   {
-    return new magnetic_dofmap_4();
+    return new velocity_dofmap_4();
   }
 
 };
 
 
-class magnetic_coordinate_mapping_3: public ufc::coordinate_mapping
+class velocity_coordinate_mapping_3: public ufc::coordinate_mapping
 {
 public:
 
-  magnetic_coordinate_mapping_3() : ufc::coordinate_mapping()
+  velocity_coordinate_mapping_3() : ufc::coordinate_mapping()
   {
     // Do nothing
   }
 
-  ~magnetic_coordinate_mapping_3() override
+  ~velocity_coordinate_mapping_3() override
   {
     // Do nothing
   }
@@ -14021,7 +14021,7 @@ public:
 
   ufc::coordinate_mapping * create() const final override
   {
-    return new magnetic_coordinate_mapping_3();
+    return new velocity_coordinate_mapping_3();
   }
 
   std::size_t geometric_dimension() const final override
@@ -14041,12 +14041,12 @@ public:
 
   ufc::finite_element * create_coordinate_finite_element() const final override
   {
-    return new magnetic_finite_element_3();
+    return new velocity_finite_element_3();
   }
 
   ufc::dofmap * create_coordinate_dofmap() const final override
   {
-    return new magnetic_dofmap_3();
+    return new velocity_dofmap_3();
   }
 
   void compute_physical_coordinates(
@@ -14054,7 +14054,7 @@ public:
       const double * X,
       const double * coordinate_dofs) const final override
   {
-    magnetic_finite_element_2 xelement;
+    velocity_finite_element_2 xelement;
     double phi[4];
     for (std::size_t ip = 0; ip < num_points; ++ip)
     {
@@ -14137,7 +14137,7 @@ public:
       const double * X,
       const double * coordinate_dofs) const final override
   {
-    magnetic_finite_element_2 xelement;
+    velocity_finite_element_2 xelement;
     double dphi[12];
     for (std::size_t ip = 0; ip < num_points; ++ip)
     {
@@ -14212,16 +14212,16 @@ public:
 };
 
 
-class magnetic_cell_integral_0_otherwise: public ufc::cell_integral
+class velocity_cell_integral_0_otherwise: public ufc::cell_integral
 {
 public:
 
-  magnetic_cell_integral_0_otherwise() : ufc::cell_integral()
+  velocity_cell_integral_0_otherwise() : ufc::cell_integral()
   {
 
   }
 
-  ~magnetic_cell_integral_0_otherwise() override
+  ~velocity_cell_integral_0_otherwise() override
   {
 
   }
@@ -14747,16 +14747,16 @@ return enabled;
 };
 
 
-class magnetic_cell_integral_1_otherwise: public ufc::cell_integral
+class velocity_cell_integral_1_otherwise: public ufc::cell_integral
 {
 public:
 
-  magnetic_cell_integral_1_otherwise() : ufc::cell_integral()
+  velocity_cell_integral_1_otherwise() : ufc::cell_integral()
   {
 
   }
 
-  ~magnetic_cell_integral_1_otherwise() override
+  ~velocity_cell_integral_1_otherwise() override
   {
 
   }
@@ -14884,16 +14884,16 @@ return enabled;
 };
 
 
-class magnetic_form_0: public ufc::form
+class velocity_form_0: public ufc::form
 {
 public:
 
-  magnetic_form_0() : ufc::form()
+  velocity_form_0() : ufc::form()
   {
     // Do nothing
   }
 
-  ~magnetic_form_0() override
+  ~velocity_form_0() override
   {
     // Do nothing
   }
@@ -14925,17 +14925,17 @@ public:
 
   ufc::finite_element * create_coordinate_finite_element() const final override
   {
-    return new magnetic_finite_element_3();
+    return new velocity_finite_element_3();
   }
 
   ufc::dofmap * create_coordinate_dofmap() const final override
   {
-    return new magnetic_dofmap_3();
+    return new velocity_dofmap_3();
    }
 
   ufc::coordinate_mapping * create_coordinate_mapping() const final override
   {
-    return new magnetic_coordinate_mapping_3();
+    return new velocity_coordinate_mapping_3();
   }
 
   ufc::finite_element * create_finite_element(std::size_t i) const final override
@@ -14943,13 +14943,13 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_1();
+        return new velocity_finite_element_1();
     case 1:
-        return new magnetic_finite_element_1();
+        return new velocity_finite_element_1();
     case 2:
-        return new magnetic_finite_element_4();
+        return new velocity_finite_element_4();
     case 3:
-        return new magnetic_finite_element_1();
+        return new velocity_finite_element_1();
     default:
         return nullptr;
     }
@@ -14960,13 +14960,13 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_1();
+        return new velocity_dofmap_1();
     case 1:
-        return new magnetic_dofmap_1();
+        return new velocity_dofmap_1();
     case 2:
-        return new magnetic_dofmap_4();
+        return new velocity_dofmap_4();
     case 3:
-        return new magnetic_dofmap_1();
+        return new velocity_dofmap_1();
     default:
         return nullptr;
     }
@@ -15094,7 +15094,7 @@ public:
 
   ufc::cell_integral * create_default_cell_integral() const final override
   {
-    return new magnetic_cell_integral_0_otherwise();
+    return new velocity_cell_integral_0_otherwise();
   }
 
   ufc::exterior_facet_integral * create_default_exterior_facet_integral() const final override
@@ -15135,16 +15135,16 @@ public:
 };
 
 
-class magnetic_form_1: public ufc::form
+class velocity_form_1: public ufc::form
 {
 public:
 
-  magnetic_form_1() : ufc::form()
+  velocity_form_1() : ufc::form()
   {
     // Do nothing
   }
 
-  ~magnetic_form_1() override
+  ~velocity_form_1() override
   {
     // Do nothing
   }
@@ -15176,17 +15176,17 @@ public:
 
   ufc::finite_element * create_coordinate_finite_element() const final override
   {
-    return new magnetic_finite_element_3();
+    return new velocity_finite_element_3();
   }
 
   ufc::dofmap * create_coordinate_dofmap() const final override
   {
-    return new magnetic_dofmap_3();
+    return new velocity_dofmap_3();
    }
 
   ufc::coordinate_mapping * create_coordinate_mapping() const final override
   {
-    return new magnetic_coordinate_mapping_3();
+    return new velocity_coordinate_mapping_3();
   }
 
   ufc::finite_element * create_finite_element(std::size_t i) const final override
@@ -15194,11 +15194,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_finite_element_1();
+        return new velocity_finite_element_1();
     case 1:
-        return new magnetic_finite_element_4();
+        return new velocity_finite_element_4();
     case 2:
-        return new magnetic_finite_element_1();
+        return new velocity_finite_element_1();
     default:
         return nullptr;
     }
@@ -15209,11 +15209,11 @@ public:
     switch (i)
     {
     case 0:
-        return new magnetic_dofmap_1();
+        return new velocity_dofmap_1();
     case 1:
-        return new magnetic_dofmap_4();
+        return new velocity_dofmap_4();
     case 2:
-        return new magnetic_dofmap_1();
+        return new velocity_dofmap_1();
     default:
         return nullptr;
     }
@@ -15341,7 +15341,7 @@ public:
 
   ufc::cell_integral * create_default_cell_integral() const final override
   {
-    return new magnetic_cell_integral_1_otherwise();
+    return new velocity_cell_integral_1_otherwise();
   }
 
   ufc::exterior_facet_integral * create_default_exterior_facet_integral() const final override
@@ -15403,7 +15403,7 @@ public:
 #include <dolfin/adaptivity/GoalFunctional.h>
 #include <dolfin/la/GenericVector.h>
 
-namespace magnetic
+namespace velocity
 {
 
 class CoefficientSpace_B: public dolfin::FunctionSpace
@@ -15413,8 +15413,8 @@ public:
   // Constructor for standard function space
   CoefficientSpace_B(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh))
   {
     // Do nothing
   }
@@ -15422,8 +15422,8 @@ public:
   // Constructor for constrained function space
   CoefficientSpace_B(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15437,8 +15437,8 @@ public:
   // Constructor for standard function space
   CoefficientSpace_k(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_4>(), *mesh))
   {
     // Do nothing
   }
@@ -15446,32 +15446,32 @@ public:
   // Constructor for constrained function space
   CoefficientSpace_k(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_4>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_4>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_4>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_4>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
 
 };
 
-class CoefficientSpace_velocity0: public dolfin::FunctionSpace
+class CoefficientSpace_vel0: public dolfin::FunctionSpace
 {
 public:
 
   // Constructor for standard function space
-  CoefficientSpace_velocity0(std::shared_ptr<const dolfin::Mesh> mesh):
+  CoefficientSpace_vel0(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh))
   {
     // Do nothing
   }
 
   // Constructor for constrained function space
-  CoefficientSpace_velocity0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
+  CoefficientSpace_vel0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15485,8 +15485,8 @@ public:
   // Constructor for standard function space
   Form_a_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh))
   {
     // Do nothing
   }
@@ -15494,8 +15494,8 @@ public:
   // Constructor for constrained function space
   Form_a_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15509,8 +15509,8 @@ public:
   // Constructor for standard function space
   Form_a_FunctionSpace_1(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh))
   {
     // Do nothing
   }
@@ -15518,8 +15518,8 @@ public:
   // Constructor for constrained function space
   Form_a_FunctionSpace_1(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15581,7 +15581,7 @@ public:
     _function_spaces[0] = V0;
     _function_spaces[1] = V1;
 
-    _ufc_form = std::make_shared<const magnetic_form_0>();
+    _ufc_form = std::make_shared<const velocity_form_0>();
   }
 
   // Constructor
@@ -15594,7 +15594,7 @@ public:
     this->k = k;
     this->B = B;
 
-    _ufc_form = std::make_shared<const magnetic_form_0>();
+    _ufc_form = std::make_shared<const velocity_form_0>();
   }
 
   // Destructor
@@ -15744,8 +15744,8 @@ public:
   // Constructor for standard function space
   Form_L_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh))
   {
     // Do nothing
   }
@@ -15753,8 +15753,8 @@ public:
   // Constructor for constrained function space
   Form_L_FunctionSpace_0(std::shared_ptr<const dolfin::Mesh> mesh, std::shared_ptr<const dolfin::SubDomain> constrained_domain):
     dolfin::FunctionSpace(mesh,
-                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<magnetic_finite_element_1>()),
-                          std::make_shared<const dolfin::DofMap>(std::make_shared<magnetic_dofmap_1>(), *mesh, constrained_domain))
+                          std::make_shared<const dolfin::FiniteElement>(std::make_shared<velocity_finite_element_1>()),
+                          std::make_shared<const dolfin::DofMap>(std::make_shared<velocity_dofmap_1>(), *mesh, constrained_domain))
   {
     // Do nothing
   }
@@ -15783,7 +15783,7 @@ public:
 
 typedef CoefficientSpace_k Form_L_FunctionSpace_1;
 
-typedef CoefficientSpace_velocity0 Form_L_FunctionSpace_2;
+typedef CoefficientSpace_vel0 Form_L_FunctionSpace_2;
 
 class Form_L: public dolfin::Form
 {
@@ -15791,23 +15791,23 @@ public:
 
   // Constructor
   Form_L(std::shared_ptr<const dolfin::FunctionSpace> V0):
-    dolfin::Form(1, 2), k(*this, 0), velocity0(*this, 1)
+    dolfin::Form(1, 2), k(*this, 0), vel0(*this, 1)
   {
     _function_spaces[0] = V0;
 
-    _ufc_form = std::make_shared<const magnetic_form_1>();
+    _ufc_form = std::make_shared<const velocity_form_1>();
   }
 
   // Constructor
-  Form_L(std::shared_ptr<const dolfin::FunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> velocity0):
-    dolfin::Form(1, 2), k(*this, 0), velocity0(*this, 1)
+  Form_L(std::shared_ptr<const dolfin::FunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> vel0):
+    dolfin::Form(1, 2), k(*this, 0), vel0(*this, 1)
   {
     _function_spaces[0] = V0;
 
     this->k = k;
-    this->velocity0 = velocity0;
+    this->vel0 = vel0;
 
-    _ufc_form = std::make_shared<const magnetic_form_1>();
+    _ufc_form = std::make_shared<const velocity_form_1>();
   }
 
   // Destructor
@@ -15819,7 +15819,7 @@ public:
   {
     if (name == "k")
       return 0;
-    else if (name == "velocity0")
+    else if (name == "vel0")
       return 1;
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15836,7 +15836,7 @@ public:
     case 0:
       return "k";
     case 1:
-      return "velocity0";
+      return "vel0";
     }
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15849,11 +15849,11 @@ public:
   typedef Form_L_FunctionSpace_0 TestSpace;
   typedef Form_L_MultiMeshFunctionSpace_0 MultiMeshTestSpace;
   typedef Form_L_FunctionSpace_1 CoefficientSpace_k;
-  typedef Form_L_FunctionSpace_2 CoefficientSpace_velocity0;
+  typedef Form_L_FunctionSpace_2 CoefficientSpace_vel0;
 
   // Coefficients
   dolfin::CoefficientAssigner k;
-  dolfin::CoefficientAssigner velocity0;
+  dolfin::CoefficientAssigner vel0;
 };
 
 class MultiMeshForm_L: public dolfin::MultiMeshForm
@@ -15862,7 +15862,7 @@ public:
 
   // Constructor
   MultiMeshForm_L(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0):
-    dolfin::MultiMeshForm(V0), k(*this, 0), velocity0(*this, 1)
+    dolfin::MultiMeshForm(V0), k(*this, 0), vel0(*this, 1)
   {
     // Create and add standard forms
     std::size_t num_parts = V0->num_parts(); // assume all equal and pick first
@@ -15880,8 +15880,8 @@ public:
   }
 
   // Constructor
-  MultiMeshForm_L(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> velocity0):
-    dolfin::MultiMeshForm(V0), k(*this, 0), velocity0(*this, 1)
+  MultiMeshForm_L(std::shared_ptr<const dolfin::MultiMeshFunctionSpace> V0, std::shared_ptr<const dolfin::GenericFunction> k, std::shared_ptr<const dolfin::GenericFunction> vel0):
+    dolfin::MultiMeshForm(V0), k(*this, 0), vel0(*this, 1)
   {
     // Create and add standard forms
     std::size_t num_parts = V0->num_parts(); // assume all equal and pick first
@@ -15896,7 +15896,7 @@ public:
 
     /// Assign coefficients
     this->k = k;
-    this->velocity0 = velocity0;
+    this->vel0 = vel0;
 
   }
 
@@ -15909,7 +15909,7 @@ public:
   {
     if (name == "k")
       return 0;
-    else if (name == "velocity0")
+    else if (name == "vel0")
       return 1;
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15926,7 +15926,7 @@ public:
     case 0:
       return "k";
     case 1:
-      return "velocity0";
+      return "vel0";
     }
 
     dolfin::dolfin_error("generated code for class Form",
@@ -15939,11 +15939,11 @@ public:
   typedef Form_L_FunctionSpace_0 TestSpace;
   typedef Form_L_MultiMeshFunctionSpace_0 MultiMeshTestSpace;
   typedef Form_L_FunctionSpace_1 CoefficientSpace_k;
-  typedef Form_L_FunctionSpace_2 CoefficientSpace_velocity0;
+  typedef Form_L_FunctionSpace_2 CoefficientSpace_vel0;
 
   // Coefficients
   dolfin::MultiMeshCoefficientAssigner k;
-  dolfin::MultiMeshCoefficientAssigner velocity0;
+  dolfin::MultiMeshCoefficientAssigner vel0;
 };
 
 // Class typedefs
