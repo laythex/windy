@@ -12,6 +12,7 @@ q = TestFunction(Q)
 
 k  = Coefficient(R)
 u1 = Coefficient(V)
+rho = Coefficient(Q)
 
 a = inner(grad(p), grad(q))*dx
-L = -(1/k)*div(u1)*q*dx
+L = -(1/k)*div(rho*u1)*q*dx
