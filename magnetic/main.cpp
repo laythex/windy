@@ -5,9 +5,12 @@
 
 using namespace dolfin;
 
+// Средний радиус Марса (Volumetric mean radius (km)) в метрах
+// https://web.archive.org/web/20200317184127/https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+const double radius = 3389.5e3;
+
 // Размеры расчетной области
-const double radius = 1;
-const double boxsize = 2;
+const double boxsize = radius * 2;
 
 // Отсюда приходит поток частиц
 class InflowDomain : public SubDomain
@@ -27,7 +30,8 @@ public:
 
 	void eval(Array<double> &values, const Array<double> &x) const
 	{
-		values[0] = 1;
+		// https://solarscience.msfc.nasa.gov/SolarWind.shtml
+		values[0] = 800 * 1e3;
 		values[1] = 0;
 		values[2] = 0;
 	}
@@ -39,6 +43,7 @@ class InflowConcentration : public Expression
 public:
 	void eval(Array<double> &values, const Array<double> &x) const
 	{
+		// Относительная величина
 		values[0] = 1;
 	}
 };
@@ -52,9 +57,19 @@ public:
 
 	void eval(Array<double> &values, const Array<double> &coords) const
 	{
-		// Дипольный момент Земли
-		double mx = 20;
-		double my = 20;
+		// Дипольный момент Марса
+		// https://www.britannica.com/science/geomagnetic-field/Dipolar-field
+		// https://www.sciencedirect.com/science/article/pii/S0032063397001864
+		double m = 8.22e22 * 1e-4;
+
+		// Угол между экваториальной плоскостью Марса и плоскостью его орбиты (Obliquity to orbit (deg)) в радианах
+		// https://web.archive.org/web/20200317184127/https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+		// Надо еще учесть угол между магнитным и обычным полюсами
+		double e = 25.19 * M_PI / 180;
+
+		// День летнего солнцестояния
+		double mx = m * sin(e);
+		double my = m * cos(e);
 		double mz = 0;
 
 		double x = coords[0], y = coords[1], z = coords[2];
@@ -78,7 +93,7 @@ int main()
 	double T = 1;
 
 	// Нагло позаимствовал
-	unsigned resolution = 24;
+	unsigned resolution = 20;
 	auto universe = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
 	auto planet = mshr::Sphere(Point(0, 0, 0), radius);
 	auto atmosphere = universe - planet;

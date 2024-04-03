@@ -14346,12 +14346,12 @@ return enabled;
         for (int ic = 0; ic < 10; ++ic)
             w1_c0 += w[1][ic] * FE8_C0_Q24[0][iq][ic];
         alignas(32) double sv24[6];
-        sv24[0] = -1 * w1_c2 * sp[14];
-        sv24[1] = -1 * (-1 * w1_c1) * sp[14];
-        sv24[2] = -1 * (-1 * w1_c0) * sp[14];
-        sv24[3] = -1 * w1_c0 * sp[14];
-        sv24[4] = -1 * (-1 * w1_c2) * sp[14];
-        sv24[5] = -1 * w1_c1 * sp[14];
+        sv24[0] = -1 * (47861179.39289456 * w1_c2) * sp[14];
+        sv24[1] = -1 * (47861179.39289456 * (-1 * w1_c1)) * sp[14];
+        sv24[2] = -1 * (47861179.39289456 * (-1 * w1_c0)) * sp[14];
+        sv24[3] = -1 * (47861179.39289456 * w1_c0) * sp[14];
+        sv24[4] = -1 * (47861179.39289456 * (-1 * w1_c2)) * sp[14];
+        sv24[5] = -1 * (47861179.39289456 * w1_c1) * sp[14];
         const double fw0 = sv24[0] * weights24[iq];
         alignas(32) double TF0[10];
         for (int i = 0; i < 10; ++i)
@@ -14900,7 +14900,7 @@ public:
 
   const char * signature() const final override
   {
-    return "f358f9127d25b0683a435239a69e7a18c3e24ec67b02062aca3e307b229a2286c54f8a2a9c0645cdaf909f1fa5cf3eda29792da9341d46cf8520847c561f1c5b";
+    return "7eb81049b9d3d918eeefcd4a0ab49e67639bbca31c3ba9d5f4d4e98111af68258ac47ed7a2fcddc085728d3fb182bb088ed5504d84373b915a41908566a2d496";
   }
 
   std::size_t rank() const final override
