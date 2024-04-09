@@ -12,9 +12,9 @@ using namespace dolfin;
 // Радиус планеты
 const double rad = 0.5;
 // Высота атмосферы
-const double height = 1.5;
+const double height = 3;
 // Коэффициент силы притяжения
-const double G = 0.01;
+const double G = 0.05;
 // Коэффициент плотности в экспоненте
 const double K = 5;
 // Плотность на поверхности планеты
@@ -24,7 +24,7 @@ const double atm = 0.1;
 
 // Вектор вращения планеты
 std::vector<double> w = {0, 0, 1};
- 
+
 // Скорость у поверхности
 class SurfaceVelocity : public Expression
 {
@@ -109,7 +109,7 @@ class SpaceBoundary : public SubDomain
 
 int main()
 {
-    unsigned resolution = 40;
+    unsigned resolution = 30;
     auto universe = mshr::Sphere(Point(0, 0, 0), rad + height);
     auto planet = mshr::Sphere(Point(0, 0, 0), rad);
     auto atmosphere = universe - planet;
@@ -125,7 +125,7 @@ int main()
     auto sur_p = std::make_shared<Constant>(atm);
     auto sur_v = std::make_shared<SurfaceVelocity>();
 
-    auto space_p = std::make_shared<Constant>(atm*exp(-K * (height)));
+    auto space_p = std::make_shared<Constant>(atm * exp(-K * (height)));
 
     auto surface = std::make_shared<SurfaceBoundary>();
     auto space = std::make_shared<SpaceBoundary>();

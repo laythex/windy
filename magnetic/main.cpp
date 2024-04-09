@@ -106,7 +106,6 @@ int main()
 	// Домен, который отвечает за вход
 	auto inflow_domain = std::make_shared<InflowDomain>();
 
-
 	// Граничное условие на скорость
 	auto inflow_vel = std::make_shared<InflowVelocity>();
 	DirichletBC vel_bc(V, inflow_vel, inflow_domain);
@@ -132,7 +131,6 @@ int main()
 	Lv.k = k;
 	Lv.vel0 = vel0;
 
-
 	// Практически то же самое с концентрацией
 	auto inflow_conc = std::make_shared<InflowConcentration>();
 	DirichletBC conc_bc(C, inflow_conc, inflow_domain);
@@ -152,7 +150,6 @@ int main()
 	ac.vel = vel0;
 	Lc.k = k;
 	Lc.conc0 = conc0;
-
 
 	File vfile("results/velocity.pvd");
 	File cfile("results/concentration.pvd");
