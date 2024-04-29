@@ -89,11 +89,11 @@ public:
 int main()
 {
 	// Шаг и длительность симуляции
-	double dt = 0.01;
+	double dt = 0.001;
 	double T = 1;
 
 	// Нагло позаимствовал
-	unsigned resolution = 20;
+	unsigned resolution = 12;
 	auto universe = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
 	auto planet = mshr::Sphere(Point(0, 0, 0), radius);
 	auto atmosphere = universe - planet;
@@ -161,11 +161,11 @@ int main()
 		solve(av == Lv, vel, vel_bc);
 		*vel0 = vel;
 		vfile << vel;
-
+		
 		solve(ac == Lc, conc, conc_bc);
 		*conc0 = conc;
 		cfile << conc;
-
+		
 		cout << "t = " << t << " s\t" << t / T * 1e2 << "%" << endl;
 		t += dt;
 	}
