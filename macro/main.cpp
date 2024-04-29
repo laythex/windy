@@ -1,63 +1,33 @@
 #include <dolfin.h>
-#include <cmath>
-#include <vector>
-#include "TentativeVelocity.h"
-#include "PressureUpdate.h"
-#include "VelocityUpdate.h"
-#include "mshr.h"
 #include <filesystem>
-#include "atmosphere.h"
-#include "magnetic.h"
+
+#include "mshr.h"
+
+#include "MagneticFieldModel.hpp"
+#include "AtmosphereModel.hpp"
+#include "Constants.hpp"
 
 using namespace dolfin;
 
-
 int main()
 {   
-    // Радиус планеты
-    const double rad = 0.5;
-    // Высота атмосферы
-    const double height = 3;
-    // Коэффициент силы притяжения
-    const double G = 0.05;
-    // Коэффициент плотности в экспоненте
-    const double K = 5;
-    // Плотность на поверхности планеты
-    const double rho_0 = 1;
-    // Атмосферное давление
-    const double p_0 = 0.1;
+    // Создание сетки
+    auto planet_mesh = mshr::Sphere(Point(0, 0, 0), Constants::PLANET_RADIUS);
+    auto universe_mesh = mshr::Sphere(Point(0, 0, 0), Constants::PLANET_RADIUS + Constants::ATMO_HEIGHT);
+    auto atmosphere_mesh = universe_mesh - planet_mesh;
+    auto mesh = mshr::generate_mesh(atmosphere_mesh, Constants::MESH_RESOLUTION);
 
-    auto planet  = mshr::Sphere(Point(0, 0, 0), rad);
+    MagneticFieldModel magn(mesh);
+    AtmosphereModel atmo(mesh);
 
-    //Сетка для атмосферы
-    unsigned resolution_atm = 30;
-    auto universe_atm  = mshr::Sphere(Point(0, 0, 0), rad + height);
-    auto atmosphere_atm  = universe_atm - planet;
-    auto mesh_atm = mshr::generate_mesh(atmosphere_atm, resolution_atm);
-
-    //Сетка для ветра
-    double boxsize = 3.5;
-    auto resolution_mag = 20;
-	auto universe_mag = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
-	auto atmosphere_mag = universe_mag - planet;
-	auto mesh_mag = mshr::generate_mesh(atmosphere_mag, resolution_mag);
-
-    double dt = 0.01;
-    double T = 5;
-
-    //Инициализация модуля атмосферы
-    atm::init(mesh_atm, dt, rad, height, G, K, rho_0, p_0);
-    //Инициализация солнечного ветра и магнитного поля
-    mag::init(mesh_mag, dt, boxsize);
-
-    double t = dt;
-
-    while (t < T + DOLFIN_EPS)
+    double t = Constants::DELTA_TIME;
+    while (t < Constants::SIM_DURATION + DOLFIN_EPS)
     {   
-        atm::calc();
-        mag::calc();
-        t += dt;
-        cout << "t = " << t << endl;
+        magn.calculate();
+        atmo.calculate();
+
+        t += Constants::DELTA_TIME;
+        std::cout << "t = " << t << '\n';
     }
 
     return 0;
