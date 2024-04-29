@@ -1,0 +1,32 @@
+# Заставил работать на основе этого
+# https://fenicsproject.org/olddocs/dolfin/1.6.0/cpp/demo/documented/navier-stokes/cpp/documentation.html
+# https://fenicsproject.org/pub/tutorial/html/._ftut1010.html#ftut1:reactionsystem
+
+# Для генерации .hpp
+# ffc -l dolfin concentration.ufl
+
+# Здесь на основе полученной скорости частиц считается их концентрация
+# с помощью уравнения непрерывности
+
+from ufl_legacy import (dx, div, lhs, rhs,
+                 Coefficient, VectorElement, FiniteElement,
+                 tetrahedron, TestFunction, TrialFunction)
+
+
+V = VectorElement("Lagrange", tetrahedron, 2)
+C = FiniteElement("Lagrange", tetrahedron, 1)
+R = FiniteElement("Real", tetrahedron, 0)
+
+conc = TrialFunction(C)
+c = TestFunction(C)
+
+k = Coefficient(R)
+vel = Coefficient(V)
+conc0 = Coefficient(C)
+
+# Уравнение непрерывности 
+eq = (conc - conc0) / k * c * dx - \
+     div(conc * vel) * c * dx
+
+a = lhs(eq)
+L = rhs(eq)

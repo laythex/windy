@@ -1,0 +1,39 @@
+# Заставил работать на основе этого
+# https://fenicsproject.org/olddocs/dolfin/1.6.0/cpp/demo/documented/navier-stokes/cpp/documentation.html
+# https://fenicsproject.org/pub/tutorial/html/._ftut1010.html#ftut1:reactionsystem
+
+# Для генерации .hpp
+# ffc -l dolfin velocity.ufl
+
+from ufl_legacy import (dx, dot, cross, div, lhs, rhs,
+                 Coefficient, VectorElement, FiniteElement,
+                 tetrahedron, TestFunction, TrialFunction)
+
+# Все считаю в СИ
+# Коэффициент q/m в ускорении, разный для разных частиц
+e = 1.602176634e-19
+me = 9.1093837015e-31
+mp = 1.67262192369e-27
+mn = 1.67492749804e-27
+
+qm = 2 * e / (2 * mp + 2 * mn)
+
+# Чтобы было проще отлаживать
+# qm = 1
+
+V = VectorElement("Lagrange", tetrahedron, 2)
+R = FiniteElement("Real", tetrahedron, 0)
+
+vel = TrialFunction(V)
+v = TestFunction(V)
+
+k = Coefficient(R)
+B = Coefficient(V)
+vel0 = Coefficient(V)
+
+# 2-й закон Ньютона
+eq = (1 / k) * dot(vel - vel0, v) * dx - \
+     qm * dot(cross(vel, B), v) * dx
+
+a = lhs(eq)
+L = rhs(eq)
