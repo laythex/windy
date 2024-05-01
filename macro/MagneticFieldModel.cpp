@@ -49,14 +49,28 @@ MagneticFieldModel::MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh) {
     ac->vel = vel0;
     Lc->k = k;
     Lc->conc0 = conc0;
+
+    // уэээ
+    assemble(Av, *av);
+    assemble(Ac, *ac);
 }
 
 void MagneticFieldModel::calculate() {
-    solve(*av == *Lv, *vel, *vel_bc);
-    *vel0 = *vel;
-    vfile << *vel;
+    begin("Computing wind particles velocity");
+    assemble(bv, *Lv);
+    // vel_bc->apply(Av, bv);
+    solve(Av, *vel->vector(), bv, "gmres", "default");
+    end();
 
-    solve(*ac == *Lc, *conc, *conc_bc);
-    *conc0 = *conc;
+    // begin("Computing wind particles concentration");
+    // assemble(bc, *Lc);
+    // conc_bc->apply(Ac, bc);
+    // solve(Ac, *conc->vector(), bc, "gmres", "ilu");
+    // end();
+
+    vfile << *vel;
     cfile << *conc;
+
+    *vel0 = *vel;
+    *conc0 = *conc;
 }

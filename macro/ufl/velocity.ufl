@@ -5,9 +5,9 @@
 # Для генерации .hpp
 # ffc -l dolfin velocity.ufl
 
-from ufl_legacy import (dx, dot, cross, div, lhs, rhs,
-                 Coefficient, VectorElement, FiniteElement,
-                 tetrahedron, TestFunction, TrialFunction)
+from ufl_legacy import (dx, dot, cross, inner, div, lhs, rhs,
+                    Coefficient, VectorElement, FiniteElement,
+                    tetrahedron, TestFunction, TrialFunction)
 
 # Все считаю в СИ
 # Коэффициент q/m в ускорении, разный для разных частиц
@@ -32,8 +32,8 @@ B = Coefficient(V)
 vel0 = Coefficient(V)
 
 # 2-й закон Ньютона
-eq = (1 / k) * dot(vel - vel0, v) * dx - \
-     qm * dot(cross(vel, B), v) * dx
+eq = (1 / k) * inner(vel - vel0, v) * dx - \
+     qm * inner(cross(vel, B), v) * dx
 
 a = lhs(eq)
 L = rhs(eq)

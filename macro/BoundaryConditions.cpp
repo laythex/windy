@@ -53,8 +53,7 @@ InflowVelocity::InflowVelocity() : Expression(3) { }
 
 void InflowVelocity::eval(Array<double> &values, const Array<double> &x) const
 {
-    // https://solarscience.msfc.nasa.gov/SolarWind.shtml
-    values[0] = 800 * 1e3;
+    values[0] = Constants::SOLAR_WIND_VELOCITY;
     values[1] = 0;
     values[2] = 0;
 }
@@ -73,19 +72,9 @@ MagneticField::MagneticField() : Expression(3) {}
 
 void MagneticField::eval(Array<double> &values, const Array<double> &coords) const
 {
-    // Дипольный момент Марса
-    // https://www.britannica.com/science/geomagnetic-field/Dipolar-field
-    // https://www.sciencedirect.com/science/article/pii/S0032063397001864
-    double m = 8.22e22 * 1e-4;
-
-    // Угол между экваториальной плоскостью Марса и плоскостью его орбиты (Obliquity to orbit (deg)) в радианах
-    // https://web.archive.org/web/20200317184127/https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
-    // Надо еще учесть угол между магнитным и обычным полюсами
-    double e = 25.19 * M_PI / 180;
-
     // День летнего солнцестояния
-    double mx = m * sin(e);
-    double my = m * cos(e);
+    double mx = Constants::MAGNETIC_MOMENT * sin(Constants::INC_TO_ORBITAL_PLANE);
+    double my = Constants::MAGNETIC_MOMENT * cos(Constants::INC_TO_ORBITAL_PLANE);
     double mz = 0;
 
     double x = coords[0], y = coords[1], z = coords[2];
@@ -98,7 +87,7 @@ void MagneticField::eval(Array<double> &values, const Array<double> &coords) con
     // Магнитное поле диполя
     values[0] = (3 * x * rm / r2 - mx) / (r2 * r);
     values[1] = (3 * y * rm / r2 - my) / (r2 * r);
-    values[2] = (3 * z * rm / r2 - mz) / (r2 * r);
+    values[2] = 1e-1;//(3 * z * rm / r2 - mz) / (r2 * r);
 }
 
 /*=============================================================================*/

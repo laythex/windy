@@ -24,7 +24,7 @@ int main()
     while (t < Constants::SIM_DURATION + DOLFIN_EPS)
     {   
         magn.calculate();
-        atmo.calculate();
+        // atmo.calculate();
 
         t += Constants::DELTA_TIME;
         std::cout << "t = " << t << '\n';

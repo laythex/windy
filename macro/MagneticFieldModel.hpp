@@ -23,13 +23,16 @@ class MagneticFieldModel{
     DirichletBC* vel_bc;
     DirichletBC* conc_bc;    
 
+    Matrix Av, Ac;
+    Vector bv, bc;
+
     Function* vel;
     std::shared_ptr<Function> vel0;
     Function* conc;
     std::shared_ptr<Function> conc0;
 
-    File vfile{"results/velocity.pvd"};
-    File cfile{"results/concentration.pvd"};
+    File vfile{"results/magn_velocity.pvd"};
+    File cfile{"results/magn_concentration.pvd"};
 
     public:
     MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh);
