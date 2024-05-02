@@ -87,7 +87,7 @@ void MagneticField::eval(Array<double> &values, const Array<double> &coords) con
     // Магнитное поле диполя
     values[0] = (3 * x * rm / r2 - mx) / (r2 * r);
     values[1] = (3 * y * rm / r2 - my) / (r2 * r);
-    values[2] = 1e-1;//(3 * z * rm / r2 - mz) / (r2 * r);
+    values[2] = (3 * z * rm / r2 - mz) / (r2 * r);
 }
 
 /*=============================================================================*/

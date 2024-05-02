@@ -58,7 +58,7 @@ MagneticFieldModel::MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh) {
 void MagneticFieldModel::calculate() {
     begin("Computing wind particles velocity");
     assemble(bv, *Lv);
-    // vel_bc->apply(Av, bv);
+    vel_bc->apply(Av, bv);
     solve(Av, *vel->vector(), bv, "gmres", "default");
     end();
 
