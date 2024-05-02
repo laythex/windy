@@ -21,7 +21,7 @@ namespace Constants { // Все размерные величины заданы
     constexpr double SIDERIAL_PERIOD                = 24.6229 * 60 * 60;                    // Сидерический период обращения                        [1]
     constexpr std::array<double, 3> ANGULAR_VEL     = {0, 0, 2 * M_PI / SIDERIAL_PERIOD};   // Вектор угловой скорости планеты                      
     constexpr double INC_TO_ORBITAL_PLANE           = 25.19 * deg2rad;                      // Наклон оси вращения Марса к плоскости его орбиты     [1]
-    constexpr double MAGNETIC_MOMENT                = 8.22e10;                              // Магнитный дипольный момент Марса                     [2]
+    constexpr double MAGNETIC_MOMENT                = 8.22e15;  // На самом деле подгон     // Магнитный дипольный момент Марса                     [2]
     constexpr double SOLAR_WIND_VELOCITY            = 8e5;                                  // Скорость частиц солнечного ветра                     [3]
 
     // Параметры вычислительной сетки                   

@@ -62,11 +62,11 @@ void MagneticFieldModel::calculate() {
     solve(Av, *vel->vector(), bv, "gmres", "default");
     end();
 
-    // begin("Computing wind particles concentration");
-    // assemble(bc, *Lc);
-    // conc_bc->apply(Ac, bc);
-    // solve(Ac, *conc->vector(), bc, "gmres", "ilu");
-    // end();
+    begin("Computing wind particles concentration");
+    assemble(bc, *Lc);
+    conc_bc->apply(Ac, bc);
+    solve(Ac, *conc->vector(), bc, "gmres", "ilu");
+    end();
 
     vfile << *vel;
     cfile << *conc;
