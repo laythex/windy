@@ -31,10 +31,7 @@ class MagneticFieldModel{
     Function* conc;
     std::shared_ptr<Function> conc0;
 
-    File vfile{"results/magn_velocity.pvd"};
-    File cfile{"results/magn_concentration.pvd"};
-
     public:
     MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh);
-    void calculate();
+    std::pair<std::shared_ptr<Function>, std::shared_ptr<Function>> calculate();
 };

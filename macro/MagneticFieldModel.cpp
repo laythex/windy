@@ -55,7 +55,7 @@ MagneticFieldModel::MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh) {
     assemble(Ac, *ac);
 }
 
-void MagneticFieldModel::calculate() {
+std::pair<std::shared_ptr<Function>, std::shared_ptr<Function>> MagneticFieldModel::calculate() {
     begin("Computing wind particles velocity");
     assemble(bv, *Lv);
     vel_bc->apply(Av, bv);
@@ -68,9 +68,8 @@ void MagneticFieldModel::calculate() {
     solve(Ac, *conc->vector(), bc, "gmres", "ilu");
     end();
 
-    vfile << *vel;
-    cfile << *conc;
-
     *vel0 = *vel;
     *conc0 = *conc;
+    
+    return std::make_pair(conc0, vel0);
 }

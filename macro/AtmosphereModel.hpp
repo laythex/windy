@@ -36,10 +36,7 @@ class AtmosphereModel {
     // Звучит страшно, я это не трогал
     const std::string prec{has_krylov_solver_preconditioner("amg") ? "amg" : "default"};
 
-    File ufile{"results/atmo_velocity.pvd"};
-    File pfile{"results/atmo_pressure.pvd"};
-
     public:
     AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh);
-    void calculate();
+    std::pair<std::shared_ptr<Function>, std::shared_ptr<Function>> calculate();
 };

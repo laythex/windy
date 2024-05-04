@@ -54,7 +54,7 @@ AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh) {
     dfile << *rho_fun;
 }
 
-void AtmosphereModel::calculate() {
+std::pair<std::shared_ptr<Function>, std::shared_ptr<Function>> AtmosphereModel::calculate() {
     // Compute tentative velocity step
     begin("Computing tentative velocity");
     assemble(b1, *L1);
@@ -78,11 +78,10 @@ void AtmosphereModel::calculate() {
     bcu1->apply(A3, b3);
     solve(A3, *u1->vector(), b3, "gmres", "default");
     end();
-
-    // Save to file
-    ufile << *u1;
-    pfile << *p1;
+    
 
     // Move to next time step
     *u0 = *u1;
+
+    return std::make_pair(p1, u0);
 }
