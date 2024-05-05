@@ -4,7 +4,7 @@ from ufl_legacy import (Coefficient, dx, FiniteElement, VectorElement,
 
 
 V = VectorElement("Lagrange", tetrahedron, 3)
-Q = FiniteElement("Lagrange", tetrahedron, 1)
+Q = FiniteElement("Lagrange", tetrahedron, 3)
 R = FiniteElement("Real", tetrahedron, 0)
 
 p = TrialFunction(Q)

@@ -31,9 +31,34 @@ int main()
     {   
         auto magn_pair = magn.calculate();
         auto atmo_pair = atmo.calculate();
-        
-        atmo_pair.second->vector = (atmo_pair.second)->vector + (magn_pair.second)->vector;
 
+        Vector atmo_c = *((atmo_pair.first)->vector());
+        Vector magn_c = *((magn_pair.first)->vector());
+        Vector atmo_v = *((atmo_pair.second)->vector());
+        Vector magn_v = *((magn_pair.second)->vector());
+
+        //Для нормировки
+        atmo_c/=Constants::PRESSURE_ASL;
+
+        // info(std::to_string(atmo_c.size()));
+        // info(std::to_string(magn_c.size()));
+        // info(std::to_string(atmo_v.size()));
+        // info(std::to_string(magn_v.size()));
+
+        Vector result_v = Vector(atmo_v);
+
+
+        for (int i = 0; i < atmo_v.size()/3; i++){
+            double data[] = {atmo_v[i*3] * atmo_c[i] + magn_v[i*3] * magn_c[i], atmo_v[i*3 + 1] * atmo_c[i] + magn_v[i*3 + 1] * magn_c[i + 1],
+            atmo_v[i*3 + 2] * atmo_c[i] + magn_v[i*3 + 2] * magn_c[i + 2]};
+            int ind[] = {i*3, i*3+1, i*3+2};
+            result_v.set(data, 3, ind);
+        }
+        
+        //*(atmo_pair.second)->vector() = result_v;
+        //*(atmo_pair.second)->vector() = *(atmo_v + magn_v);
+        
+        
         magn_cfile << *magn_pair.first;
         magn_vfile << *magn_pair.second;
         atmo_pfile << *atmo_pair.first;

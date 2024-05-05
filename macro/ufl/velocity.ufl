@@ -21,7 +21,7 @@ qm = 2 * e / (2 * mp + 2 * mn) # Альфа-частица
 # Чтобы было проще отлаживать
 # qm = 1
 
-V = VectorElement("Lagrange", tetrahedron, 2)
+V = VectorElement("Lagrange", tetrahedron, 3)
 R = FiniteElement("Real", tetrahedron, 0)
 
 vel = TrialFunction(V)

@@ -13,8 +13,8 @@ from ufl_legacy import (dx, div, lhs, rhs,
                  tetrahedron, TestFunction, TrialFunction)
 
 
-V = VectorElement("Lagrange", tetrahedron, 2)
-C = FiniteElement("Lagrange", tetrahedron, 1)
+V = VectorElement("Lagrange", tetrahedron, 3)
+C = FiniteElement("Lagrange", tetrahedron, 3)
 R = FiniteElement("Real", tetrahedron, 0)
 
 conc = TrialFunction(C)
