@@ -11,7 +11,7 @@
 
 using namespace dolfin;
 
-class MagneticFieldModel{
+class MagneticFieldModel {
 
     private:
     velocity::BilinearForm* av;
@@ -26,12 +26,14 @@ class MagneticFieldModel{
     Matrix Av, Ac;
     Vector bv, bc;
 
-    Function* vel;
+    std::shared_ptr<Function> vel;
+    std::shared_ptr<Function> conc;
     std::shared_ptr<Function> vel0;
-    Function* conc;
     std::shared_ptr<Function> conc0;
 
     public:
-    MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh);
-    std::pair<std::shared_ptr<Function>, std::shared_ptr<Function>> calculate();
+    MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh, 
+                       std::shared_ptr<Function>& magn_vel,
+                       std::shared_ptr<Function>& magn_conc);
+    void calculate();
 };

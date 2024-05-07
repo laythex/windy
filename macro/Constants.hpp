@@ -21,11 +21,11 @@ namespace Constants { // Рабочие параметры
     constexpr double SIDERIAL_PERIOD                = 24.6229 * 60 * 60;                    // Сидерический период обращения                        
     constexpr std::array<double, 3> ANGULAR_VEL     = {0, 0, 1};                            // Вектор угловой скорости планеты                      
     constexpr double INC_TO_ORBITAL_PLANE           = 25.19 * deg2rad;                      // Наклон оси вращения Марса к плоскости его орбиты     
-    constexpr double MAGNETIC_MOMENT                = 1e-5;        // На самом деле подгон     // Магнитный дипольный момент Марса                  
+    constexpr double MAGNETIC_MOMENT                = 1e-5;        // На самом деле подгон  // Магнитный дипольный момент Марса                  
     constexpr double SOLAR_WIND_VELOCITY            = 1;                                    // Скорость частиц солнечного ветра                     
 
     // Параметры вычислительной сетки                   
-    constexpr unsigned MESH_RESOLUTION              = 30;                                   // Разрешение сетки
+    constexpr unsigned MESH_RESOLUTION              = 20;                                   // Разрешение сетки
 
 }
 

@@ -1,20 +1,23 @@
 #include "AtmosphereModel.hpp"
 
-AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh) {
+AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh, 
+                                 std::shared_ptr<Function>& atmo_vel,
+                                 std::shared_ptr<Function>& atmo_pres) {
+    
     auto V = std::make_shared<VelocityUpdate::FunctionSpace>(mesh);
     auto Q = std::make_shared<PressureUpdate::FunctionSpace>(mesh);
 
-    // Давление на поверхности atm
-    auto sur_p = std::make_shared<Constant>(Constants::PRESSURE_ASL);
-    auto sur_v = std::make_shared<SurfaceVelocity>();
-    auto space_p = std::make_shared<Constant>(Constants::PRESSURE_ASL * exp(-Constants::DISTRIB_COEFF * Constants::ATMO_HEIGHT));
+    // Давление на поверхности
+    auto vel_sur = std::make_shared<SurfaceVelocity>();
+    auto pres_sur = std::make_shared<Constant>(Constants::PRESSURE_ASL);
+    auto pres_space = std::make_shared<Constant>(Constants::PRESSURE_ASL * exp(-Constants::DISTRIB_COEFF * Constants::ATMO_HEIGHT));
     
     auto surface = std::make_shared<SurfaceBoundary>();
     auto space = std::make_shared<SpaceBoundary>();
 
-    bcu1 = new DirichletBC(V, sur_v, surface);
-    bcp1 = new DirichletBC(Q, sur_p, surface);
-    bcp2 = new DirichletBC(Q, space_p, space);
+    bc_vel = new DirichletBC(V, vel_sur, surface);
+    bc_pres_sur = new DirichletBC(Q, pres_sur, surface);
+    bc_pres_space = new DirichletBC(Q, pres_space, space);
 
     a1 = new TentativeVelocity::BilinearForm(V, V);
     L1 = new TentativeVelocity::LinearForm(V);
@@ -24,9 +27,13 @@ AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh) {
     L3 = new VelocityUpdate::LinearForm(V);
 
     // Создаем все из ufl файлов. Там три таких, на три вариационные задачи (расчет скоростей, расчет давлений, корректировка скоростей)
-    u0 = std::make_shared<Function>(V);
-    u1 = std::make_shared<Function>(V);
-    p1 = std::make_shared<Function>(Q);
+    vel0 = std::make_shared<Function>(V);
+
+    atmo_vel = std::make_shared<Function>(V);
+    vel = atmo_vel;
+
+    atmo_pres = std::make_shared<Function>(Q);
+    pres = atmo_pres;
 
     auto k = std::make_shared<Constant>(Constants::DELTA_TIME);
     auto f = std::make_shared<GravityForces>();
@@ -37,12 +44,12 @@ AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh) {
 
     // Веселуха
     a1->k = k;      a1->rho = rho;
-    L1->k = k;      L1->u0 = u0;    
+    L1->k = k;      L1->u0 = vel0;    
     L1->f = f;      L1->rho = rho;
-    L2->k = k;      L2->u1 = u1;
+    L2->k = k;      L2->u1 = vel;
     L2->rho = rho;  a3->rho = rho;
-    L3->k = k;      L3->u1 = u1;
-    L3->p1 = p1;    L3->rho = rho;
+    L3->k = k;      L3->u1 = vel;
+    L3->p1 = pres;  L3->rho = rho;
 
     // Решаем вариационные линейные задачи
     assemble(A1, *a1);
@@ -54,34 +61,31 @@ AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh) {
     dfile << *rho_fun;
 }
 
-std::pair<std::shared_ptr<Function>, std::shared_ptr<Function>> AtmosphereModel::calculate() {
+void AtmosphereModel::calculate() {
     // Compute tentative velocity step
     begin("Computing tentative velocity");
     assemble(b1, *L1);
-    bcu1->apply(A1, b1);
-    solve(A1, *u1->vector(), b1, "gmres", "default");
+    bc_vel->apply(A1, b1);
+    solve(A1, *vel->vector(), b1, "gmres", "default");
     end();
 
     // Pressure correction
     begin("Computing pressure correction");
     assemble(b2, *L2);
-    bcp1->apply(A2, b2);
-    bcp1->apply(*p1->vector());
-    bcp2->apply(A2, b2);
-    bcp2->apply(*p1->vector());
-    solve(A2, *p1->vector(), b2, "bicgstab", prec);
+    bc_pres_sur->apply(A2, b2);
+    bc_pres_sur->apply(*pres->vector());
+    bc_pres_space->apply(A2, b2);
+    bc_pres_space->apply(*pres->vector());
+    solve(A2, *pres->vector(), b2, "bicgstab", prec);
     end();
 
     // Velocity correction
     begin("Computing velocity correction");
     assemble(b3, *L3);
-    bcu1->apply(A3, b3);
-    solve(A3, *u1->vector(), b3, "gmres", "default");
+    bc_vel->apply(A3, b3);
+    solve(A3, *vel->vector(), b3, "gmres", "default");
     end();
     
-
     // Move to next time step
-    *u0 = *u1;
-
-    return std::make_pair(p1, u0);
+    *vel0 = *vel;
 }

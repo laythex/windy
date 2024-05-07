@@ -17,52 +17,56 @@ int main()
     auto atmosphere_mesh = universe_mesh - planet_mesh;
     auto mesh = mshr::generate_mesh(atmosphere_mesh, Constants::MESH_RESOLUTION);
 
-    MagneticFieldModel magn(mesh);
-    AtmosphereModel atmo(mesh);
+    // Указатели на функции, в которые будут записаны результаты вычислений
+    std::shared_ptr<Function> magn_vel;
+    std::shared_ptr<Function> magn_conc;
+    std::shared_ptr<Function> atmo_vel;
+    std::shared_ptr<Function> atmo_pres;
 
-    //Файлы для записи результатов
-    File magn_vfile{"results/magn_velocity.pvd"};
-    File magn_cfile{"results/magn_concentration.pvd"};
-    File atmo_vfile{"results/atmo_velocity.pvd"};
-    File atmo_pfile{"results/atmo_pressure.pvd"};
+    MagneticFieldModel magn(mesh, magn_vel, magn_conc);
+    AtmosphereModel atmo(mesh, atmo_vel, atmo_pres);
+
+    // Файлы для записи результатов
+    File magn_vel_file{"results/magn_velocity.pvd"};
+    File magn_conc_file{"results/magn_concentration.pvd"};
+    File atmo_vel_file{"results/atmo_velocity.pvd"};
+    File atmo_pres_file{"results/atmo_pressure.pvd"};
 
     double t = Constants::DELTA_TIME;
     while (t < Constants::SIM_DURATION + DOLFIN_EPS)
     {   
-        auto magn_pair = magn.calculate();
-        auto atmo_pair = atmo.calculate();
+        // Проводим одну итерацию вычислений
+        magn.calculate();
+        atmo.calculate();
 
-        Vector atmo_c = *((atmo_pair.first)->vector());
-        Vector magn_c = *((magn_pair.first)->vector());
-        Vector atmo_v = *((atmo_pair.second)->vector());
-        Vector magn_v = *((magn_pair.second)->vector());
+        Vector magn_vel_vec = *(magn_vel->vector());
+        Vector magn_conc_vec = *(magn_conc->vector());
+        Vector atmo_vel_vec = *(atmo_vel->vector());
+        Vector atmo_pres_vec = *(atmo_pres->vector());
 
-        //Для нормировки
-        atmo_c/=Constants::PRESSURE_ASL;
+        // Для нормисов
+        atmo_pres_vec /= Constants::PRESSURE_ASL;
 
-        // info(std::to_string(atmo_c.size()));
-        // info(std::to_string(magn_c.size()));
-        // info(std::to_string(atmo_v.size()));
-        // info(std::to_string(magn_v.size()));
+        info(std::to_string(atmo_vel_vec[0]));
+        info(std::to_string(atmo_pres_vec[0]));
 
-        Vector result_v = Vector(atmo_v);
+        Vector result_vec = Vector(atmo_vel_vec);
 
+        for (int i = 0; i < result_vec.size() / 3; i++){
+            std::array<double, 3> total = { atmo_vel_vec[i * 3 + 0] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 0] * magn_conc_vec[i], 
+                                            atmo_vel_vec[i * 3 + 1] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 1] * magn_conc_vec[i],
+                                            atmo_vel_vec[i * 3 + 2] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 2] * magn_conc_vec[i] };
+            std::array<int, 3> indicies = { i * 3 + 0, 
+                                            i * 3 + 1, 
+                                            i * 3 + 2 };
 
-        for (int i = 0; i < atmo_v.size()/3; i++){
-            double data[] = {atmo_v[i*3] * atmo_c[i] + magn_v[i*3] * magn_c[i], atmo_v[i*3 + 1] * atmo_c[i] + magn_v[i*3 + 1] * magn_c[i + 1],
-            atmo_v[i*3 + 2] * atmo_c[i] + magn_v[i*3 + 2] * magn_c[i + 2]};
-            int ind[] = {i*3, i*3+1, i*3+2};
-            result_v.set(data, 3, ind);
+            result_vec.set(total.data(), 3, indicies.data());
         }
         
-        //*(atmo_pair.second)->vector() = result_v;
-        //*(atmo_pair.second)->vector() = *(atmo_v + magn_v);
-        
-        
-        magn_cfile << *magn_pair.first;
-        magn_vfile << *magn_pair.second;
-        atmo_pfile << *atmo_pair.first;
-        atmo_vfile << *atmo_pair.second;
+        magn_vel_file << *magn_vel;
+        magn_conc_file << *magn_conc;
+        atmo_vel_file << *atmo_vel;
+        atmo_pres_file << *atmo_pres;
 
         t += Constants::DELTA_TIME;
         std::cout << "t = " << t << '\n';
