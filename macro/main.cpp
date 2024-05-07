@@ -27,10 +27,10 @@ int main()
     AtmosphereModel atmo(mesh, atmo_vel, atmo_pres);
 
     // Файлы для записи результатов
-    File magn_vel_file{"results/magn_velocity.pvd"};
-    File magn_conc_file{"results/magn_concentration.pvd"};
-    File atmo_vel_file{"results/atmo_velocity.pvd"};
-    File atmo_pres_file{"results/atmo_pressure.pvd"};
+    File magn_vel_file("results/magn_velocity.pvd");
+    File magn_conc_file("results/magn_concentration.pvd");
+    File atmo_vel_file("results/atmo_velocity.pvd");
+    File atmo_pres_file("results/atmo_pressure.pvd");
 
     double t = Constants::DELTA_TIME;
     while (t < Constants::SIM_DURATION + DOLFIN_EPS)
@@ -47,12 +47,12 @@ int main()
         // Для нормисов
         atmo_pres_vec /= Constants::PRESSURE_ASL;
 
-        info(std::to_string(atmo_vel_vec[0]));
-        info(std::to_string(atmo_pres_vec[0]));
+        // info(std::to_string(atmo_vel_vec[0]));
+        // info(std::to_string(atmo_pres_vec[0]));
 
-        Vector result_vec = Vector(atmo_vel_vec);
+        std::shared_ptr<GenericVector> result_vec = atmo_vel->vector();
 
-        for (int i = 0; i < result_vec.size() / 3; i++){
+        for (int i = 0; i < result_vec->size() / 3; i++){
             std::array<double, 3> total = { atmo_vel_vec[i * 3 + 0] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 0] * magn_conc_vec[i], 
                                             atmo_vel_vec[i * 3 + 1] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 1] * magn_conc_vec[i],
                                             atmo_vel_vec[i * 3 + 2] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 2] * magn_conc_vec[i] };
@@ -60,7 +60,7 @@ int main()
                                             i * 3 + 1, 
                                             i * 3 + 2 };
 
-            result_vec.set(total.data(), 3, indicies.data());
+            result_vec->set(total.data(), 3, indicies.data());
         }
         
         magn_vel_file << *magn_vel;
@@ -69,7 +69,7 @@ int main()
         atmo_pres_file << *atmo_pres;
 
         t += Constants::DELTA_TIME;
-        std::cout << "t = " << t << '\n';
+        std::cout << "t = " << t << std::endl;
     }
 
     return 0;
