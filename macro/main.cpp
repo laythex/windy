@@ -1,7 +1,6 @@
 #include <dolfin.h>
-#include <filesystem>
-
-#include "mshr.h"
+#include <mshr.h>
+#include <boost/filesystem.hpp>
 
 #include "MagneticFieldModel.hpp"
 #include "AtmosphereModel.hpp"
@@ -26,13 +25,16 @@ int main()
     MagneticFieldModel magn(mesh, magn_vel, magn_conc);
     AtmosphereModel atmo(mesh, atmo_vel, atmo_pres);
 
-    // Файлы для записи результатов
+    // Удаляем предыдущие вычисления
+    boost::filesystem::remove_all("results/");
+
+    // Создаем файлы для записи результатов
     File magn_vel_file("results/magn_velocity.pvd");
     File magn_conc_file("results/magn_concentration.pvd");
     File atmo_vel_file("results/atmo_velocity.pvd");
     File atmo_pres_file("results/atmo_pressure.pvd");
 
-    double t = Constants::DELTA_TIME;
+    double t = 0;
     while (t < Constants::SIM_DURATION + DOLFIN_EPS)
     {   
         // Проводим одну итерацию вычислений

@@ -25,7 +25,7 @@ namespace Constants { // Рабочие параметры
     constexpr double SOLAR_WIND_VELOCITY            = 1;                                    // Скорость частиц солнечного ветра                     
 
     // Параметры вычислительной сетки                   
-    constexpr unsigned MESH_RESOLUTION              = 20;                                   // Разрешение сетки
+    constexpr unsigned MESH_RESOLUTION              = 10;                                   // Разрешение сетки
 
 }
 
