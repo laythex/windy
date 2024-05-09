@@ -35,7 +35,7 @@ int main()
     File atmo_pres_file("results/atmo_pressure.pvd");
 
     double t = 0;
-    while (t < Constants::SIM_DURATION + DOLFIN_EPS)
+    while (t < Constants::SIM_DURATION)
     {   
         // Проводим одну итерацию вычислений
         magn.calculate();

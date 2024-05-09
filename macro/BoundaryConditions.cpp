@@ -72,22 +72,23 @@ MagneticField::MagneticField() : Expression(3) {}
 
 void MagneticField::eval(Array<double> &values, const Array<double> &coords) const
 {
-    // День летнего солнцестояния
-    double mx = Constants::MAGNETIC_MOMENT * sin(Constants::INC_TO_ORBITAL_PLANE);
-    double my = Constants::MAGNETIC_MOMENT * cos(Constants::INC_TO_ORBITAL_PLANE);
-    double mz = 0;
+    // Проекции магнитного момента на оси координат
+    double mx = Constants::MAGNETIC_MOMENT * Constants::ANGULAR_VEL[0];
+    double my = Constants::MAGNETIC_MOMENT * Constants::ANGULAR_VEL[1];
+    double mz = Constants::MAGNETIC_MOMENT * Constants::ANGULAR_VEL[2];
 
     double x = coords[0], y = coords[1], z = coords[2];
 
     // Штуки для вычисления поля диполя
     double rm = x * mx + y * my + z * mz;
     double r2 = x * x + y * y + z * z;
-    double r = sqrt(r2);
+    double r3 = r2 * sqrt(r2);
+    double rm2 = 3 * rm / r2;
 
     // Магнитное поле диполя
-    values[0] = (3 * x * rm / r2 - mx) / (r2 * r);
-    values[1] = (3 * y * rm / r2 - my) / (r2 * r);
-    values[2] = (3 * z * rm / r2 - mz) / (r2 * r);
+    values[0] = (x * rm2 - mx) / r3;
+    values[1] = (y * rm2 - my) / r3;
+    values[2] = (z * rm2 - mz) / r3;
 }
 
 /*=============================================================================*/

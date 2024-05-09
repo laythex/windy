@@ -13,22 +13,20 @@ MagneticFieldModel::MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh,
 
     // Инициализация скорости
     auto inflow_vel = std::make_shared<InflowVelocity>();    // Граничное условие на скорость
-    vel_bc = new DirichletBC(V, inflow_vel, inflow_domain);
+    vel_bc = std::make_shared<DirichletBC>(V, inflow_vel, inflow_domain);
 
-    InflowVelocity vel_ic;    // Начальные условия (совпадают с граничными)
-
-    magn_vel = std::make_shared<Function>(V);   // Инициализиурем указатель пришедший извне
-    vel = magn_vel;   // Указатель на искомую функцию, делится с указателем извне
-    *vel = vel_ic;
-
+    vel = std::make_shared<Function>(V);   // Указатель на искомую функцию
     vel0 = std::make_shared<Function>(V);
-    *vel0 = vel_ic;
+    magn_vel = vel;   // Инициализиурем указатель пришедший извне
+
+    *vel = *inflow_vel;    // Начальные условия (совпадают с граничными)
+    *vel0 = *inflow_vel;
 
     auto k = std::make_shared<Constant>(Constants::DELTA_TIME);    // Инициализация вещей из хедера
     auto B = std::make_shared<MagneticField>();
 
-    av = new velocity::BilinearForm(V, V);
-    Lv = new velocity::LinearForm(V);
+    av = std::make_shared<velocity::BilinearForm>(V, V);
+    Lv = std::make_shared<velocity::LinearForm>(V);
 
     av->k = k;
     av->B = B;
@@ -37,19 +35,17 @@ MagneticFieldModel::MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh,
 
     // Инициализация концентрации
     auto inflow_conc = std::make_shared<InflowConcentration>();
-    conc_bc = new DirichletBC(C, inflow_conc, inflow_domain);
+    conc_bc =  std::make_shared<DirichletBC>(C, inflow_conc, inflow_domain);
 
-    InflowConcentration conc_ic;
-
-    magn_conc = std::make_shared<Function>(C);
-    conc = magn_conc;
-    *conc = conc_ic;
-
+    conc = std::make_shared<Function>(C);
     conc0 = std::make_shared<Function>(C);
-    *conc0 = conc_ic;
+    magn_conc = conc;
 
-    ac = new concentration::BilinearForm(C, C);
-    Lc = new concentration::LinearForm(C);
+    *conc = *inflow_conc;
+    *conc0 = *inflow_conc;
+
+    ac = std::make_shared<concentration::BilinearForm>(C, C);
+    Lc = std::make_shared<concentration::LinearForm>(C);
 
     ac->k = k;
     ac->vel = vel0;

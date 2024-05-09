@@ -14,14 +14,14 @@ using namespace dolfin;
 class MagneticFieldModel {
 
     private:
-    velocity::BilinearForm* av;
-    velocity::LinearForm* Lv;
+    std::shared_ptr<velocity::BilinearForm> av;
+    std::shared_ptr<velocity::LinearForm> Lv;
 
-    concentration::BilinearForm* ac;
-    concentration::LinearForm* Lc;
+    std::shared_ptr<concentration::BilinearForm> ac;
+    std::shared_ptr<concentration::LinearForm> Lc;
 
-    DirichletBC* vel_bc;
-    DirichletBC* conc_bc;    
+    std::shared_ptr<DirichletBC> vel_bc;
+    std::shared_ptr<DirichletBC> conc_bc;    
 
     Matrix Av, Ac;
     Vector bv, bc;

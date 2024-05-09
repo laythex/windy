@@ -27,13 +27,12 @@ AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh,
     L3 = new VelocityUpdate::LinearForm(V);
 
     // Создаем все из ufl файлов. Там три таких, на три вариационные задачи (расчет скоростей, расчет давлений, корректировка скоростей)
+    vel = std::make_shared<Function>(V);
     vel0 = std::make_shared<Function>(V);
+    atmo_vel = vel;
 
-    atmo_vel = std::make_shared<Function>(V);
-    vel = atmo_vel;
-
-    atmo_pres = std::make_shared<Function>(Q);
-    pres = atmo_pres;
+    pres = std::make_shared<Function>(Q);
+    atmo_pres = pres;
 
     auto k = std::make_shared<Constant>(Constants::DELTA_TIME);
     auto f = std::make_shared<GravityForces>();
@@ -56,7 +55,6 @@ AtmosphereModel::AtmosphereModel(std::shared_ptr<dolfin::Mesh> mesh,
     assemble(A2, *a2);
     assemble(A3, *a3);
 
-    // std::filesystem::remove_all("results");
     File dfile("results/density.pvd");
     dfile << *rho_fun;
 }
