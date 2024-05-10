@@ -59,17 +59,22 @@ int main()
             //                                 atmo_vel_vec[i * 3 + 2] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 2] * magn_conc_vec[i] };
 
             double alpha = Constants::MASS_RATIO * atmo_pres_vec[i] / magn_conc_vec[i];
-            double mass_coeff = (alpha + 1) / (alpha - 1);
+            double mass_coeff = (alpha - 1) / (alpha + 1);
 
-            std::array<double, 3> total = { (atmo_vel_vec[i * 3 + 0] - magn_vel_vec[i * 3 + 0]) * mass_coeff + magn_vel_vec[i],
-                                            (atmo_vel_vec[i * 3 + 1] - magn_vel_vec[i * 3 + 1]) * mass_coeff + magn_vel_vec[i],
-                                            (atmo_vel_vec[i * 3 + 2] - magn_vel_vec[i * 3 + 2]) * mass_coeff + magn_vel_vec[i] };
+            std::array<double, 3> atmo_total = { (atmo_vel_vec[i * 3 + 0] - magn_vel_vec[i * 3 + 0]) * mass_coeff + magn_vel_vec[i * 3 + 0],
+                                                 (atmo_vel_vec[i * 3 + 1] - magn_vel_vec[i * 3 + 1]) * mass_coeff + magn_vel_vec[i * 3 + 1],
+                                                 (atmo_vel_vec[i * 3 + 2] - magn_vel_vec[i * 3 + 2]) * mass_coeff + magn_vel_vec[i * 3 + 2]};
+
+            std::array<double, 3> magn_total = { (atmo_vel_vec[i * 3 + 0] - magn_vel_vec[i * 3 + 0]) * (1 + mass_coeff) + magn_vel_vec[i * 3 + 0],
+                                                 (atmo_vel_vec[i * 3 + 1] - magn_vel_vec[i * 3 + 1]) * (1 + mass_coeff) + magn_vel_vec[i * 3 + 1],
+                                                 (atmo_vel_vec[i * 3 + 2] - magn_vel_vec[i * 3 + 2]) * (1 + mass_coeff) + magn_vel_vec[i * 3 + 2]};
 
             std::array<int, 3> indicies = { i * 3 + 0, 
                                             i * 3 + 1, 
                                             i * 3 + 2 };
 
-            atmo_vel->vector()->set(total.data(), 3, indicies.data());
+            atmo_vel->vector()->set(atmo_total.data(), 3, indicies.data());
+            magn_vel->vector()->set(magn_total.data(), 3, indicies.data());
         }
         end();
         
