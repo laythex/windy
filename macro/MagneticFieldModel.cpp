@@ -48,7 +48,7 @@ MagneticFieldModel::MagneticFieldModel(std::shared_ptr<dolfin::Mesh> mesh,
     Lc = std::make_shared<concentration::LinearForm>(C);
 
     ac->k = k;
-    ac->vel = vel0;
+    ac->vel = vel;
     Lc->k = k;
     Lc->conc0 = conc0;
 

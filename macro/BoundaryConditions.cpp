@@ -53,7 +53,7 @@ InflowVelocity::InflowVelocity() : Expression(3) { }
 
 void InflowVelocity::eval(Array<double> &values, const Array<double> &x) const
 {
-    values[0] = Constants::SOLAR_WIND_VELOCITY;
+    values[0] = -Constants::SOLAR_WIND_VELOCITY;
     values[1] = 0;
     values[2] = 0;
 }

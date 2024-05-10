@@ -1,7 +1,9 @@
 #include <dolfin.h>
+#include <mshr.h>
+#include <boost/filesystem.hpp>
+
 #include "velocity.h"
 #include "concentration.h"
-#include "mshr.h"
 
 using namespace dolfin;
 
@@ -60,7 +62,7 @@ public:
 		// Дипольный момент Марса
 		// https://www.britannica.com/science/geomagnetic-field/Dipolar-field
 		// https://www.sciencedirect.com/science/article/pii/S0032063397001864
-		double m = 8.22e22 * 1e-4;
+		double m = 8.22e15;
 
 		// Угол между экваториальной плоскостью Марса и плоскостью его орбиты (Obliquity to orbit (deg)) в радианах
 		// https://web.archive.org/web/20200317184127/https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
@@ -77,23 +79,24 @@ public:
 		// Штуки для вычисления поля диполя
 		double rm = x * mx + y * my + z * mz;
 		double r2 = x * x + y * y + z * z;
-		double r = sqrt(r2);
+		double r3 = r2 * sqrt(r2);
+		double rm2 = 3 * rm / r2;
 
 		// Магнитное поле диполя
-		values[0] = (3 * x * rm / r2 - mx) / (r2 * r);
-		values[1] = (3 * y * rm / r2 - my) / (r2 * r);
-		values[2] = (3 * z * rm / r2 - mz) / (r2 * r);
+		values[0] = (x * rm2 - mx) / r3;
+		values[1] = (y * rm2 - my) / r3;
+		values[2] = (z * rm2 - mz) / r3;
 	}
 };
 
 int main()
 {
 	// Шаг и длительность симуляции
-	double dt = 0.001;
+	double dt = 0.01;
 	double T = 1;
 
 	// Нагло позаимствовал
-	unsigned resolution = 12;
+	unsigned resolution = 30;
 	auto universe = mshr::Box(Point(-boxsize, -boxsize, -boxsize), Point(boxsize, boxsize, boxsize));
 	auto planet = mshr::Sphere(Point(0, 0, 0), radius);
 	auto atmosphere = universe - planet;
@@ -112,16 +115,13 @@ int main()
 
 	// Искомая функция
 	Function vel(V);
-
-	// Начальные условия (совпадают с граничными)
-	InflowVelocity vel_ic;
-	vel = vel_ic;
+	vel = *inflow_vel;
 
 	// Инициализация вещей из .hpp
 	auto k = std::make_shared<Constant>(dt);
 	auto B = std::make_shared<MagneticField>();
 	auto vel0 = std::make_shared<Function>(V);
-	*vel0 = vel_ic;
+	*vel0 = *inflow_vel;
 
 	velocity::BilinearForm av(V, V);
 	velocity::LinearForm Lv(V);
@@ -136,12 +136,10 @@ int main()
 	DirichletBC conc_bc(C, inflow_conc, inflow_domain);
 
 	Function conc(C);
-
-	InflowConcentration conc_ic;
-	conc = conc_ic;
+	conc = *inflow_conc;
 
 	auto conc0 = std::make_shared<Function>(C);
-	*conc0 = conc_ic;
+	*conc0 = *inflow_conc;
 
 	concentration::BilinearForm ac(C, C);
 	concentration::LinearForm Lc(C);
@@ -151,22 +149,39 @@ int main()
 	Lc.k = k;
 	Lc.conc0 = conc0;
 
+    Matrix Av, Ac;
+    Vector bv, bc;
+
+    // уэээ
+    assemble(Av, av);
+    assemble(Ac, ac);
+
+    boost::filesystem::remove_all("results/");
 	File vfile("results/velocity.pvd");
 	File cfile("results/concentration.pvd");
 
 	// Основной цикл
 	double t = 0;
-	while (t < T)
-	{
-		solve(av == Lv, vel, vel_bc);
+	while (t <= T + DOLFIN_EPS) {
+		begin("Computing wind particles velocity");
+		assemble(bv, Lv);
+		vel_bc.apply(Av, bv);
+		solve(Av, *vel.vector(), bv, "gmres", "default");
+		end();
+
+		begin("Computing wind particles concentration");
+		assemble(bc, Lc);
+		conc_bc.apply(Ac, bc);
+		solve(Ac, *conc.vector(), bc, "gmres", "default");
+		end();
+
 		*vel0 = vel;
-		vfile << vel;
-		
-		solve(ac == Lc, conc, conc_bc);
 		*conc0 = conc;
+
+		vfile << vel;
 		cfile << conc;
 		
-		cout << "t = " << t << " s\t" << t / T * 1e2 << "%" << endl;
+		std::cout << "t = " << t << " s\t" << t / T * 1e2 << "%" << std::endl;
 		t += dt;
 	}
 

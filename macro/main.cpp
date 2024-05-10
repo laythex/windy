@@ -35,7 +35,7 @@ int main()
     File atmo_pres_file("results/atmo_pressure.pvd");
 
     double t = 0;
-    while (t < Constants::SIM_DURATION)
+    while (t <= Constants::SIM_DURATION + DOLFIN_EPS)
     {   
         // Проводим одну итерацию вычислений
         magn.calculate();
@@ -52,18 +52,26 @@ int main()
         // info(std::to_string(atmo_vel_vec[0]));
         // info(std::to_string(atmo_pres_vec[0]));
 
-        std::shared_ptr<GenericVector> result_vec = atmo_vel->vector();
+        begin("Applying wind to atmosphere model");
+        for (int i = 0; i < atmo_vel->vector()->size() / 3; i++) {
+            // std::array<double, 3> total = { atmo_vel_vec[i * 3 + 0] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 0] * magn_conc_vec[i], 
+            //                                 atmo_vel_vec[i * 3 + 1] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 1] * magn_conc_vec[i],
+            //                                 atmo_vel_vec[i * 3 + 2] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 2] * magn_conc_vec[i] };
 
-        for (int i = 0; i < result_vec->size() / 3; i++){
-            std::array<double, 3> total = { atmo_vel_vec[i * 3 + 0] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 0] * magn_conc_vec[i], 
-                                            atmo_vel_vec[i * 3 + 1] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 1] * magn_conc_vec[i],
-                                            atmo_vel_vec[i * 3 + 2] * atmo_pres_vec[i] + magn_vel_vec[i * 3 + 2] * magn_conc_vec[i] };
+            double alpha = Constants::MASS_RATIO * atmo_pres_vec[i] / magn_conc_vec[i];
+            double mass_coeff = (alpha + 1) / (alpha - 1);
+
+            std::array<double, 3> total = { (atmo_vel_vec[i * 3 + 0] - magn_vel_vec[i * 3 + 0]) * mass_coeff + magn_vel_vec[i],
+                                            (atmo_vel_vec[i * 3 + 1] - magn_vel_vec[i * 3 + 1]) * mass_coeff + magn_vel_vec[i],
+                                            (atmo_vel_vec[i * 3 + 2] - magn_vel_vec[i * 3 + 2]) * mass_coeff + magn_vel_vec[i] };
+
             std::array<int, 3> indicies = { i * 3 + 0, 
                                             i * 3 + 1, 
                                             i * 3 + 2 };
 
-            result_vec->set(total.data(), 3, indicies.data());
+            atmo_vel->vector()->set(total.data(), 3, indicies.data());
         }
+        end();
         
         magn_vel_file << *magn_vel;
         magn_conc_file << *magn_conc;
