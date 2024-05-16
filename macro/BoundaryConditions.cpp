@@ -2,7 +2,7 @@
 
 /*=============================================================================*/
 
-SurfaceVelocity::SurfaceVelocity() : Expression(3) { }
+SurfaceVelocity::SurfaceVelocity() : Expression(3) {}
 
 void SurfaceVelocity::eval(Array<double> &values, const Array<double> &coord) const
 {
@@ -16,7 +16,7 @@ void SurfaceVelocity::eval(Array<double> &values, const Array<double> &coord) co
 
 /*=============================================================================*/
 
-GravityForces::GravityForces() : Expression(3) { }
+GravityForces::GravityForces() : Expression(3) {}
 
 void GravityForces::eval(Array<double> &values, const Array<double> &coord) const
 {
@@ -49,11 +49,11 @@ void Density::eval(Array<double> &values, const Array<double> &coord) const
 
 /*=============================================================================*/
 
-InflowVelocity::InflowVelocity() : Expression(3) { }
+InflowVelocity::InflowVelocity() : Expression(3) {}
 
 void InflowVelocity::eval(Array<double> &values, const Array<double> &x) const
 {
-    values[0] = -Constants::SOLAR_WIND_VELOCITY;
+    values[0] = Constants::SOLAR_WIND_VELOCITY;
     values[1] = 0;
     values[2] = 0;
 }
@@ -63,7 +63,7 @@ void InflowVelocity::eval(Array<double> &values, const Array<double> &x) const
 void InflowConcentration::eval(Array<double> &values, const Array<double> &x) const
 {
     // Относительная величина
-    values[0] = 1;
+    values[0] = 0.1;
 }
 
 /*=============================================================================*/
